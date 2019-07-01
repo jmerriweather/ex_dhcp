@@ -2,11 +2,11 @@
 
 **An instrumentable dhcp GenServer for Elixir**
 
+_Largely inspired by [one_dhcpd][1]_
+
 <img src="https://api.travis-ci.com/RstorLabs/ex_dhcp.svg?branch=master"/>
 
 ## General Description
-
-Largely inspired by [one_dhcpd][1]
 
 ExDhcp is an instrumentable DHCP GenServer, with an opinionated interface that takes after the `GenStage` design.  We couldn't use GPL licenced material in-house, so this project was derived from `one_dhcpcd`.  At the moment, unlike `one_dhcpcd`, it does not implement a full DHCP server, but you *could* use ExDhcp to implement that functionality.
 
@@ -72,16 +72,17 @@ For more details, see the documentation.
 
 ### Deployment
 
-The [DHCP protocol] [3] listens in on port *67*, which is below the privileged port limit *(1024)* for most, e.g. Linux distributions.  ExDhcp doesn't presume that it will be running as root or have access to that port, and by default listens in to port *6767*.  If you expect to have access to privileged ports, you can set the port number in the module configuration.
+The [DHCP protocol][3] listens in on port *67*, which is below the privileged port limit *(1024)* for most, e.g. Linux distributions.
+
+ExDhcp doesn't presume that it will be running as root or have access to that port, and by default listens in to port *6767*.  If you expect to have access to privileged ports, you can set the port number in the module configuration.
 
 Alternatively, on most linux distributions you can use `iptables` to forward broadcast UDP from port *67* to port *6767* and vice versa.  The following incantations will achieve this:
-
-_NB: If you're using a port besides *6767*, be sure to replace it with your chosen port_
 
 ```bash
 iptables -t nat -I PREROUTING -p udp --src 0.0.0.0 --dport 67 -j DNAT --to 0.0.0.0:6767
 iptables -t nat -A POSTROUTING -p udp --sport 6767 -j SNAT --to <server ip address>:67
 ```
+_NB: If you're using a port besides *6767*, be sure to replace it with your chosen port_
 
 There may be situations where you would like to bind DHCP activity to a specific ethernet interface; this is settable from the module settings
 
@@ -93,7 +94,7 @@ setcap cap_net_raw=ep /path/to/beam.smp
 
 ## TODOs
 
-- [] publish to hex.pm
+- [ ] publish to hex.pm
 
 ## Installation
 
