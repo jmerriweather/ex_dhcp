@@ -120,33 +120,7 @@ defmodule ExDhcp do
 
     msg
     |> Packet.decode(module.options_parsers())
-    |> case do
-      # parsed versions
-      pack = %Packet{options: %{message_type: :discover}} ->
-        handle_discover_impl(pack, state)
-      pack = %Packet{options: %{message_type: :request}} ->
-        handle_request_impl(pack, state)
-      pack = %Packet{options: %{message_type: :decline}} ->
-        handle_decline_impl(pack, state)
-      pack = %Packet{options: %{message_type: :release}} ->
-        handle_release_impl(pack, state)
-      pack = %Packet{options: %{message_type: :inform}} ->
-        handle_inform_impl(pack, state)
-      # unparsed versions
-      pack = %Packet{options: %{@message_type => <<@dhcp_discover>>}} ->
-        handle_discover_impl(pack, state)
-      pack = %Packet{options: %{@message_type => <<@dhcp_request>>}} ->
-        handle_request_impl(pack, state)
-      pack = %Packet{options: %{@message_type => <<@dhcp_decline>>}} ->
-        handle_decline_impl(pack, state)
-      pack = %Packet{options: %{@message_type => <<@dhcp_release>>}} ->
-        handle_release_impl(pack, state)
-      pack = %Packet{options: %{@message_type => <<@dhcp_inform>>}} ->
-        handle_inform_impl(pack, state)
-      # catchall
-      pack = %Packet{} ->
-        handle_packet_impl(pack, state)
-    end
+    |> packet_switch(state)
     |> process_action(state)
   end
   # handle other types of information that get sent to server.
@@ -162,6 +136,32 @@ defmodule ExDhcp do
       {:noreply, state}
     end
   end
+
+  defp packet_switch(pack = %{options: options}, state), do: packet_switch(pack, options, state)
+
+  # versions that are parsed by Options.Basic
+  defp packet_switch(pack, %{message_type: :discover}, state), do: handle_discover_impl(pack, state)
+  defp packet_switch(pack, %{message_type: :request}, state), do: handle_request_impl(pack, state)
+  defp packet_switch(pack, %{message_type: :decline}, state), do: handle_decline_impl(pack, state)
+  defp packet_switch(pack, %{message_type: :release}, state), do: handle_release_impl(pack, state)
+  defp packet_switch(pack, %{message_type: :inform}, state), do: handle_inform_impl(pack, state)
+  # unparsed versions
+  defp packet_switch(pack, %{@message_type => <<@dhcp_discover>>}, state) do
+    handle_discover_impl(pack, state)
+  end
+  defp packet_switch(pack, %{@message_type => <<@dhcp_request>>}, state) do
+    handle_request_impl(pack, state)
+  end
+  defp packet_switch(pack, %{@message_type => <<@dhcp_decline>>}, state) do
+    handle_decline_impl(pack, state)
+  end
+  defp packet_switch(pack, %{@message_type => <<@dhcp_release>>}, state) do
+    handle_release_impl(pack, state)
+  end
+  defp packet_switch(pack, %{@message_type => <<@dhcp_inform>>}, state) do
+    handle_inform_impl(pack, state)
+  end
+  defp packet_switch(pack, %{}, state), do: handle_packet_impl(pack, state)
 
   #############################################################################
   ## dhcp-specific event handling implementation
