@@ -1,6 +1,100 @@
 defmodule ExDhcp do
   @moduledoc """
-  Documentation for ExDhcp.
+  Creates an OTP-compliant DHCP server.
+
+  An ExDhcp module binds to a UDP port, listens to DHCP messages sent
+  to the port, and can resend (typically as a broadcast message) DHCP
+  messages in response.
+
+  You may instrument whatever state you would like into the server, the
+  DHCP-specific contents will be encapsulated into the internals of the
+  server itself and all of the state exposed to the callbacks will be
+  your own state.
+
+  Note that **ExDhcp is not a fully functional DHCP server** which conforms
+  to the RFC 1531 specs.  It does *not* keep the state of the DHCP leases,
+  store DHCP lease information to durable storage, or manage arp tables.
+  However, you *could* use ExDhcp to implement that functionality.
+
+  An example, minimal ExDhcp server might look something like this:
+
+  ```elixir
+  defmodule MyDhcpServer do
+    use ExDhcp
+    alias ExDhcp.Packet
+
+    def start_link(init_state) do
+      ExDhcp.start_link(__MODULE__, init_state)
+    end
+
+    @impl true
+    def init(init_state), do: {:ok, init_state}
+
+    @impl true
+    def handle_discover(request, xid, mac, state) do
+      # code.  Should assign the unimplemented values
+      # for the response below:
+      response = Packet.respond(request, :offer,
+        yiaddr: issued_your_address,
+        siaddr: server_ip_address,
+        subnet_mask: subnet_mask,
+        routers: [router],
+        lease_time: lease_time,
+        server: server_ip_address,
+        domain_name_servers: [dns_server]))
+      {:respond, response, new_state}
+    end
+
+    @impl true
+    def handle_request(request, xid, mac, state) do
+      # code
+      response = Packet.respond(request, :ack,
+        yiaddr: issued_your_address ...)
+      {:respond, response, state}
+    end
+
+    @impl true
+    def handle_decline(request, xid, mac, state) do
+      # code
+      response = Packet.respond(request, :offer,
+        yiaddr: new_issued_address ...)
+      {:respond, response, state}
+    end
+
+  end
+  ```
+
+  Three callbacks are required:  `handle_discover/4`,
+  `handle_request/4`, and `handle_decline/4`.  You will need to implement these
+  three DHCP functionalities to have a successful experience assigning network
+  hosts.
+
+  You may also want to implement `handle_inform/4` to manage a DHCP client
+  requesting early info, the `handle_release/4` callback to manage DHCP clients
+  relinquishing their leases, and `handle_packet/4` to generically handle
+  DHCP packets (most useful to monitor how other DHCP servers are responding on
+  your network)
+
+  Each of these DHCP callbacks take four arguments, in order: the fully parsed
+  `ExDhcp.Packet` structure, the xid (transaction id), the mac address of the
+  client, and the current state of the ExDhcp GenServer.  These are provided as
+  arguments to enable you to easily trap their contents in pattern-matching
+  guards.
+
+  Note that the `ExDhcp.Packet` structure has an `:options` field, and you
+  may want to emit tags that are outside of the provided `basic dhcp` options
+  (see `ExDhcp.Options.Basic`).  In this case, you should implement your
+  own parser module (see `ExDhcp.Options.Macro`) and instrument it into your
+  ExDhcp module using the `:dhcp_options` option, like so:
+
+  ```elixir
+    use Dhcp, dhcp_options: [ExDhcp.Options.Basic, YourParserModule, AnotherParserModule]
+  ```
+
+  ExDhcp also provides the optional callbacks `handle_call/3`, `handle_cast/2`,
+  `handle_continue/2`, and `handle_info/2`.  These operate identically to their
+  counterparts in `GenServer`, but note that they are passed their encapsulated
+  state, not the raw state of the GenServer.
   """
 
   use GenServer
@@ -49,6 +143,30 @@ defmodule ExDhcp do
   @default_client_port 68
   @default_broadcast_addr {255, 255, 255, 255}
 
+  @doc """
+  Caller function initiating the spawning of your ExDhcp GenServer.
+
+  You may supply the following extra options:
+
+  - `:port` the UDP port you'd like ExDhcp to listen in on; defaults to 6767.
+    you may want to change this to 67 if you do not want to use iptables to
+    redirect DHCP transactions to a nonprivileged Elixir server.
+  - `:bind_to_device` (must be a binary string), the device you would like to
+    bind to for DHCP listening.  Note:  This requires `cap_net_raw` to be set.
+    In Linux systems, this is settable as superuser using the following command:
+      ```bash
+      setcap cap_net_raw=ep /path/to/beam.smp
+      ```
+    Note that this is most useful when you have a device with a internal- and
+    external- facing net interfaces and you would like to only respond to DHCP
+    requests coming from select directions.
+  - `:client_port` specify a nonstandard port to send the response to.  Most
+    useful for testing purposes; defaults to 68.
+  - `:broadcast_addr` to specify a nonstandard address for responses.
+    Defaults to {255, 255, 255, 255}
+
+  See `GenServer.start_link/3` for further options.
+  """
   def start_link(module, initializer, options \\ []) do
 
     {internal_opts, gen_server_opts} = Keyword.split(options, @internal_opts)
@@ -59,6 +177,7 @@ defmodule ExDhcp do
       gen_server_opts)
   end
 
+  @typedoc false
   @type state :: %{
     module: module,
     state: term,
@@ -98,6 +217,7 @@ defmodule ExDhcp do
   #######################################################################
   ## callback overrides
 
+  @doc "See `GenServer.handle_info/2`"
   @callback handle_info(term, state) ::
     {:noreply, new_state :: state}
     | {:noreply, new_state :: state, timeout | :hibernate | {:continue, term}}
@@ -136,28 +256,39 @@ defmodule ExDhcp do
     end
   end
 
-  defp packet_switch(pack = %{options: options}, state), do: packet_switch(pack, options, state)
+  @dhcp_request_op 1
 
+  defp packet_switch(pack, state), do: packet_switch(pack, pack.options, state)
   # versions that are parsed by Options.Basic
-  defp packet_switch(pack, %{message_type: :discover}, state), do: handle_discover_impl(pack, state)
-  defp packet_switch(pack, %{message_type: :request}, state), do: handle_request_impl(pack, state)
-  defp packet_switch(pack, %{message_type: :decline}, state), do: handle_decline_impl(pack, state)
-  defp packet_switch(pack, %{message_type: :release}, state), do: handle_release_impl(pack, state)
-  defp packet_switch(pack, %{message_type: :inform}, state), do: handle_inform_impl(pack, state)
+  defp packet_switch(pack = %{op: @dhcp_request_op}, %{message_type: :discover}, state) do
+     handle_discover_impl(pack, state)
+  end
+  defp packet_switch(pack = %{op: @dhcp_request_op}, %{message_type: :request}, state) do
+     handle_request_impl(pack, state)
+  end
+  defp packet_switch(pack = %{op: @dhcp_request_op}, %{message_type: :decline}, state) do
+     handle_decline_impl(pack, state)
+  end
+  defp packet_switch(pack = %{op: @dhcp_request_op}, %{message_type: :release}, state) do
+     handle_release_impl(pack, state)
+  end
+  defp packet_switch(pack = %{op: @dhcp_request_op}, %{message_type: :inform}, state) do
+     handle_inform_impl(pack, state)
+  end
   # unparsed versions
-  defp packet_switch(pack, %{@message_type => <<@dhcp_discover>>}, state) do
+  defp packet_switch(pack = %{op: @dhcp_request_op}, %{@message_type => <<@dhcp_discover>>}, state) do
     handle_discover_impl(pack, state)
   end
-  defp packet_switch(pack, %{@message_type => <<@dhcp_request>>}, state) do
+  defp packet_switch(pack = %{op: @dhcp_request_op}, %{@message_type => <<@dhcp_request>>}, state) do
     handle_request_impl(pack, state)
   end
-  defp packet_switch(pack, %{@message_type => <<@dhcp_decline>>}, state) do
+  defp packet_switch(pack = %{op: @dhcp_request_op}, %{@message_type => <<@dhcp_decline>>}, state) do
     handle_decline_impl(pack, state)
   end
-  defp packet_switch(pack, %{@message_type => <<@dhcp_release>>}, state) do
+  defp packet_switch(pack = %{op: @dhcp_request_op}, %{@message_type => <<@dhcp_release>>}, state) do
     handle_release_impl(pack, state)
   end
-  defp packet_switch(pack, %{@message_type => <<@dhcp_inform>>}, state) do
+  defp packet_switch(pack = %{op: @dhcp_request_op}, %{@message_type => <<@dhcp_inform>>}, state) do
     handle_inform_impl(pack, state)
   end
   defp packet_switch(pack, %{}, state), do: handle_packet_impl(pack, state)
@@ -166,14 +297,18 @@ defmodule ExDhcp do
   ## dhcp-specific event handling implementation
 
   @typedoc """
-  your DHCP servers should provide either a respond or norespond condition.
-  the respond condition responds via UDP to the specified mac address.  The
-  norespond condition basically is a no-op, and the client may choose to
-  either continue sending requests on the presumption that the UDP packets
-  were dropped, or initiate an entirely new exchange.
+  DHCP callbacks should provide either a respond or norespond outcome.
+
+  In the case of the `:respond` outcome, a UDP response is sent over the
+  open port earmarked for the specified mac address.
+
+  The `:norespond` outcome is a no-op.  No information is sent over the wire,
+  and the client may choose to either continue sending requests on the
+  presumption that the UDP packets were dropped, or initiate an entirely new
+  transaction.
   """
   @type response ::
-    {:respond, Packet.response, new_state :: term} |
+    {:respond, Packet.t, new_state :: term} |
     {:norespond, new_state :: any} |
     {:stop, reason :: term, new_state :: term}
 
@@ -227,6 +362,9 @@ defmodule ExDhcp do
 
   @doc """
   Invoked on the new DHCP server process when started by `ExDhcp.start_link/3`
+
+  Should, generally, emit `{:ok, state}`, where `state` is the initial state
+  you expect to be contained within your ExDhcp GenServer.
   """
   @callback init(term) ::
     {:ok, term}
@@ -237,33 +375,55 @@ defmodule ExDhcp do
   @doc """
   responds to the DHCP discover query, as encoded in option 53.
   """
-  @callback handle_discover(Packet.request, xid::non_neg_integer, Utils.mac, state::term) :: response
+  @callback handle_discover(
+    packet::Packet.t,
+    xid::non_neg_integer,
+    mac_addr::Utils.mac,
+    state::term) :: response
 
   @doc """
   responds to the DHCP inform query, as encoded in option 53.
   Defaults to ignore.
   """
-  @callback handle_inform(Packet.request, xid::non_neg_integer, Utils.mac, state::term) :: response
+  @callback handle_inform(
+    packet::Packet.t,
+    xid::non_neg_integer,
+    mac_addr::Utils.mac,
+    state::term) :: response
 
   @doc """
   responds to the DHCP release query, as encoded in option 53.
   Defaults to ignore.
   """
-  @callback handle_release(Packet.request, xid::non_neg_integer, Utils.mac, state::term) :: response
+  @callback handle_release(
+    packet::Packet.t,
+    xid::non_neg_integer,
+    mac_addr::Utils.mac,
+    state::term) :: response
 
   @doc """
   responds to the DHCP request query, as encoded in option 53.
   """
-  @callback handle_request(Packet.request, xid::non_neg_integer, Utils.mac, state::term)  :: response
+  @callback handle_request(
+    packet::Packet.t,
+    xid::non_neg_integer,
+    mac_addr::Utils.mac,
+    state::term)  :: response
 
   @doc """
   responds to the DHCP decline query, as encoded in option 53.
   """
-  @callback handle_decline(Packet.request, xid::non_neg_integer, Utils.mac, state::term)  :: response
+  @callback handle_decline(
+    packet::Packet.t,
+    xid::non_neg_integer,
+    mac_addr::Utils.mac,
+    state::term)  :: response
 
   @doc """
   Responds to other DHCP queries or broadcast packets that might have floated
-  past the server.  There are situations where a DHCP request might have been
+  past the server.
+
+  There are situations where a DHCP request might have been
   handled by another server already and broadcasted over the layer 2 network.
   To avoid awkward leader contention or race conditions, your server may want
   to take actions in its internal state based on the information transmitted
@@ -279,7 +439,11 @@ defmodule ExDhcp do
   have overwritten option 53 with a different atom/value assignment scheme.  In
   this case, you should use also use a custom handle_packet routine.
   """
-  @callback handle_packet(Packet.request, xid::non_neg_integer, Utils.mac, state::term)  :: response
+  @callback handle_packet(
+    packet::Packet.t,
+    xid::non_neg_integer,
+    mac_addr::Utils.mac,
+    state::term)  :: response
 
   #############################################################################
   # degenerate handlers
@@ -287,6 +451,7 @@ defmodule ExDhcp do
   # these handlers merely intercept and forward GenServer functionality so that
   # you can treat your DHCP server as a fully OTP-compliant GenServer.
 
+  @doc "See `GenServer.handle_call/3`"
   @callback handle_call(term, GenServer.from, state::term) ::
     {:reply, reply :: term, new_state::term}
     | {:reply, reply :: term, new_state::term, timeout | :hibernate | {:continue, term}}
@@ -318,6 +483,7 @@ defmodule ExDhcp do
     end
   end
 
+  @doc "See `GenServer.handle_cast/2`"
   @callback handle_cast(request::term, state::term) ::
     {:noreply, new_state :: term}
     | {:noreply, new_state :: term, timeout | :hibernate | {:continue, term}}
@@ -340,6 +506,7 @@ defmodule ExDhcp do
     end
   end
 
+  @doc "See `GenServer.handle_continue/2`"
   @callback handle_continue(continue :: term, state :: term) ::
     {:noreply, new_state :: term}
     | {:noreply, new_state :: term, timeout | :hibernate | {:continue, term}}
@@ -362,7 +529,9 @@ defmodule ExDhcp do
     end
   end
 
-  @callback terminate(:normal | :shutdown | {:shutdown, term}, state :: term) :: term
+  @doc "See `GenServer.terminate/2`"
+  @callback terminate(condition :: :normal | :shutdown | {:shutdown, term},
+                      state :: term) :: term
 
   @impl true
   def terminate(reason, state = %{module: module}) do

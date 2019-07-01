@@ -14,7 +14,6 @@ with an opinionated interface that takes after the `GenStage` design.
 A minimal DhcpServer implements `handle_discover`, `handle_request`, and
 `handle_decline`, and might look something like this:
 
-
 ```elixir
 
 defmodule MyDhcpServer do
@@ -32,7 +31,7 @@ defmodule MyDhcpServer do
   def handle_discover(request, xid, mac, state) do
     # code.  Should assign the unimplemented values 
     # for the response below:
-    response = Packet.respond(request, 
+    response = Packet.respond(request, :offer,
       yiaddr: issued_your_address,
       siaddr: server_ip_address,
       subnet_mask: subnet_mask,
@@ -46,14 +45,16 @@ defmodule MyDhcpServer do
   @impl true
   def handle_request(request, xid, mac, state) do
     # code
-    response = Packet.respond(request, yiaddr: issued_your_address ...)
+    response = Packet.respond(request, :ack,
+      yiaddr: issued_your_address ...)
     {:respond, response, state}
   end
 
   @impl true
   def handle_decline(request, xid, mac, state) do
     # code
-    response = Packet.respond(request, yiaddr: new_issued_address ...)
+    response = Packet.respond(request, :offer,
+      yiaddr: new_issued_address ...)
     {:respond, response, state}
   end
 
@@ -61,6 +62,8 @@ end
 
 ```
 For more details, see the documentation.
+
+### Deployment
 
 The DHCP protocol (https://en.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol) 
 listens in on port *67*, which is below the privileged port limit 
@@ -94,7 +97,6 @@ setcap cap_net_raw=ep /path/to/beam.smp
 - complete snapshot tests
 - complete documentation
 - CI testing suite
-- ExCoveralls
 - publish to hex.pm
 
 ## Installation

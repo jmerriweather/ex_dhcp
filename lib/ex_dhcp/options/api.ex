@@ -1,8 +1,6 @@
 defmodule ExDhcp.Options.Api do
 
-  @moduledoc """
-  TODO: needs documentation
-  """
+  @moduledoc false
 
   alias ExDhcp.Options
 

@@ -1,9 +1,9 @@
 defmodule ExDhcp.Options.Pxe do
+
   @moduledoc """
-  DHCP options for pxe booting
+  DHCP options for Pxe booting systems.
   """
 
-  alias ExDhcp.Options
   import ExDhcp.Options.Macro
 
   @behaviour ExDhcp.Options.Api

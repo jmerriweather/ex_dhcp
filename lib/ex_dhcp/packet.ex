@@ -1,29 +1,30 @@
 defmodule ExDhcp.Packet do
 
   @moduledoc """
-  provides a structure for the DHCP packet, according to the spec.
+  provides a structure for the DHCP UDP packet, according to the spec.
 
-  (http://en.wikipedia.org/wiki/DHCP)
+  [https://tools.ietf.org/html/rfc1531]()
 
-  the fields are as follows:
+  For a simpler reference on the DHCP protocol's binary layout, refer to the
+  wikipedia page:
 
-  -  op:  operation (request: 1, response: 2).  This operation value allows DHCP providers
-  to coexist with other DHCP providers.  Since DHCP packets are broadcast to 255.255.255.255,
-  without this feature, they might be
+  [https://en.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol]()
 
+  - op:  operation (request: 1, response: 2).  ExDhcp will *only* respond to
+    requests (except in handle_packet) and *only* send response packets.
   - htype: specifies the hardware address type.  Currently ony ethernet is supported.
   - hlen:  specifies the hardware address length.  Currently only 6-byte MAC is supported.
-  - hops:
-  - xid:   transmission id.  Allows multiple DHCP requests to be serviced concurrently.  In
+  - hops:  number of hops, for when you do relay-DHCP
+  - xid:   transaction id.  Allows multiple DHCP requests to be serviced concurrently.  In
   this library, separate servers will be spawned to handle different transmissions.
-  - secs:
-  - flags:
-  - ciaddr: "current internet address"
-  - yiaddr: "your internet address"
-  - siaddr: "server internet address"
-  - giaddr: "gateway internet address
+  - secs:   seconds since client has booted
+  - flags:  DHCP flags (see RFC 1531, figure 2)
+  - ciaddr: "client internet address" (expected in `:request` requests)
+  - yiaddr: "'your' (client) internet address" (expected in `:offer` responses)
+  - siaddr: "next server internet address" (expected in some `:offer`, `:ack`, and `:nak` responses)
+  - giaddr: "gateway internet address (for use when doing relay-dhcp)
   - options: {integer, tuple} list.  Supported opcodes will be translated
-  into {atom, value} pairs.
+  into {atom, value} pairs by Options parser modules (see `ExDhcp.Options.Macro`)
   """
 
   alias ExDhcp.Options
@@ -49,10 +50,13 @@ defmodule ExDhcp.Packet do
             chaddr: {0, 0, 0, 0, 0, 0},
             options: []
 
-  @type option :: {non_neg_integer, binary} | {atom, any}
+  @typedoc """
+  the Packet struct type.
 
-  @type t(v)::%__MODULE__{
-    op:      v,
+  See `ExDhcp.Packet` for details on the struct parameters.
+  """
+  @type t::%__MODULE__{
+    op:      1 | 2,
     htype:   1,
     hlen:    6,
     hops:    non_neg_integer,
@@ -70,11 +74,6 @@ defmodule ExDhcp.Packet do
     }
   }
 
-  @type t::t(1) | t(2)
-
-  @type request ::t(1)
-  @type response::t(2)
-
   @typedoc """
   erlang's internal representation of an active udp packet.
   """
@@ -88,9 +87,13 @@ defmodule ExDhcp.Packet do
   @bootp_octets 192 * 8
 
   @doc """
-  pass the contents of a udp packet
+  converts a udp packet or a binary payload from a udp packet and converts
+  it to a `ExDhcp.Packet` struct.
+
+  NB: This function will fail if you attempt to pass it a udp packet that does
+  not contain the DHCP "magic cookie".
   """
-  @spec decode(udp_packet | binary, [module]) :: t | udp_packet
+  @spec decode(udp_packet | binary, [module]) :: t
   def decode(udp_packet, option_parsers \\ [Basic])
   def decode({:udp, _, _, _, binary = <<_::1888>> <> @magic_cookie <> _}, option_parsers) do
     decode(binary, option_parsers)
@@ -119,7 +122,11 @@ defmodule ExDhcp.Packet do
   end
 
   @doc """
-  Encode a message so that it can be put in a UDP packet
+  Converts from a `ExDhcp.Packet` struct into an `iolist`.
+
+  Typically, this will be sent directly to a `:gen_udp.send/2` call.  If
+  you need to examine the contents of the iolist as a binary, you may want
+  to send the results to `:erlang.iolist_to_binary/1`
   """
   @spec encode(t) :: iolist
   def encode(message, modules \\ [Basic]) do
@@ -148,6 +155,21 @@ defmodule ExDhcp.Packet do
                  release:  <<7>>,
                  inform:   <<8>>}
 
+  @spec respond(t, :offer | :ack | :nak, keyword) :: t
+  @doc """
+  A convenience function to craft a DHCP response based on the request.
+
+  `type` should be one of `[:offer, :ack, :nak]` (though in principle
+  you could set it to any of the DHCP message types)
+
+  The builtin values are reflected without change.  The DHCP opcode is
+  automatically set to 2.  The options list is stripped.
+
+  You should pass any response and options parameters as a *flat* keyword
+  list; all of the keys should be encodable by at least one of your options
+  parsing modules.  If you need to encode a value directly as an integer/binary
+  pair, do not use `respond/3`.
+  """
   def respond(packet = %__MODULE__{}, type, opts) do
     builtins = opts
     |> Keyword.take(@builtin_options)

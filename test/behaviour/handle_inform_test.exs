@@ -46,7 +46,7 @@ defmodule DhcpTest.Behaviour.HandleInformTest do
   end
 
   @localhost {127, 0, 0, 1}
-  @tag :one
+
   test "a dhcp inform message can respond to the caller" do
     InfSrvRespond.start_link(self(), client_port: 6734, broadcast_addr: @localhost)
     {:ok, sock} = :gen_udp.open(6734, [:binary, active: true])
