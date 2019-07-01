@@ -54,8 +54,14 @@ defmodule ExDhcp.Snapshot.Server do
   `dhcp-<message-type>-<timestamp>.txt`
   """
   use ExDhcp
+  require Logger
 
   @type state :: %{path: Path.t}
+
+  def start_link(path) do
+    unless File.dir?(path), do: raise "directory #{path} doesn't exist!"
+    ExDhcp.start_link(__MODULE__, %{path: path})
+  end
 
   @impl true
   @spec init(any) :: {:ok, any}
@@ -64,6 +70,8 @@ defmodule ExDhcp.Snapshot.Server do
   @spec output(Packet.t, state) :: {:norespond, state}
   defp output(p, state) do
     content = inspect p
+    Logger.info("received DHCP packet \n#{p}")
+
     timestamp = DateTime.utc_now() |> DateTime.to_iso8601(:basic)
     filename = "dhcp-#{p.options.message_type}-#{timestamp}.txt"
 

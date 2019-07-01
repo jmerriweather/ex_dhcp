@@ -55,6 +55,8 @@ defmodule ExDhcp.Options do
 
   @spec decode_integer(binary) :: integer
   def decode_integer(<<a::32>>), do: a
+  def decode_integer(<<a::16>>), do: a
+  def decode_integer(<<a::8>>), do: a
   @spec encode_integer(typecode, integer) :: binary
   def encode_integer(type, a) when is_integer(a), do: <<type, 4, a::32>>
 
