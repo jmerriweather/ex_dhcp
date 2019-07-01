@@ -1,5 +1,7 @@
 defmodule ExDhcp.Options.Basic do
 
+  @moduledoc false
+
   import ExDhcp.Options.Macro
 
   @behaviour ExDhcp.Options.Api

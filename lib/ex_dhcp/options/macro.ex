@@ -173,6 +173,7 @@ defmodule ExDhcp.Options.Macro do
     end
   end
 
+  defp doc_table({_, false}, options, module), do: doc_table({nil, ""}, options, module)
   defp doc_table({_, predoc}, options_list, context_module) do
 
     # appends a a table of options encodings to the existing documentation
