@@ -6,12 +6,17 @@
 
 ## General Description:
 
-Largely inspired by:  https://github.com/fhunleth/one_dhcpd
+Largely inspired by:  [https://github.com/fhunleth/one_dhcpd]()
 We couldn't use GPL licenced material in-house, so this project was
 derived from `one_dhcpcd`.  It's an instrumentable DHCP GenServer,
 with an opinionated interface that takes after the `GenStage` design.
 At the moment, unlike one_dhcpd, it does not implement a full DHCP
-server, but 
+server, but you *could* use ExDhcp to implement that functionality.
+
+If you need DHCP functionality for some other purpose (such as PXE
+booting) ExDhcp is ideal.  If you would like to easily implement 
+distributed DHCP with custom code hooks for custom functionality, ExDhcp 
+might be for you.
 
 ## Usage Notes:
 
@@ -69,7 +74,7 @@ For more details, see the documentation.
 
 ### Deployment
 
-The DHCP protocol (https://en.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol) 
+The DHCP protocol [https://en.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol]() 
 listens in on port *67*, which is below the privileged port limit 
 *(1024)* for most, e.g. Linux distributions.  ExDhcp doesn't presume
 that it will be running as root or have access to that port, and by
@@ -97,7 +102,6 @@ setcap cap_net_raw=ep /path/to/beam.smp
 
 ## TODOs
 
-- CI testing suite
 - publish to hex.pm
 
 ## Installation
