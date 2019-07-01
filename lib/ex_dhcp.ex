@@ -100,7 +100,7 @@ defmodule ExDhcp do
 
   @callback handle_info(term, state) ::
     {:noreply, new_state :: state}
-    | {:noreply, new_state :: state, GenServer.timeout | :hibernate | {:continue, term}}
+    | {:noreply, new_state :: state, timeout | :hibernate | {:continue, term}}
     | {:stop, reason :: term, new_state :: state}
 
   # DHCP magic cookie to select only UDP packets that are DHCP.
@@ -289,9 +289,9 @@ defmodule ExDhcp do
 
   @callback handle_call(term, GenServer.from, state::term) ::
     {:reply, reply :: term, new_state::term}
-    | {:reply, reply :: term, new_state::term, GenServer.timeout | :hibernate | {:continue, term}}
+    | {:reply, reply :: term, new_state::term, timeout | :hibernate | {:continue, term}}
     | {:noreply, new_state::term}
-    | {:noreply, new_state::term, GenServer.timeout | :hibernate | {:continue, term}}
+    | {:noreply, new_state::term, timeout | :hibernate | {:continue, term}}
     | {:stop, reason::term, reply :: term, new_state::term}
     | {:stop, reason::term, new_state::term}
 
@@ -320,7 +320,7 @@ defmodule ExDhcp do
 
   @callback handle_cast(request::term, state::term) ::
     {:noreply, new_state :: term}
-    | {:noreply, new_state :: term, GenServer.timeout | :hibernate | {:continue, term}}
+    | {:noreply, new_state :: term, timeout | :hibernate | {:continue, term}}
     | {:stop, reason :: term, new_state :: term}
 
   @impl true
@@ -342,7 +342,7 @@ defmodule ExDhcp do
 
   @callback handle_continue(continue :: term, state :: term) ::
     {:noreply, new_state :: term}
-    | {:noreply, new_state :: term, GenServer.timeout | :hibernate | {:continue, term}}
+    | {:noreply, new_state :: term, timeout | :hibernate | {:continue, term}}
     | {:stop, reason :: term(), new_state :: term}
 
   @impl true

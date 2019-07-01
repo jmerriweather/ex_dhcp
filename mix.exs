@@ -21,8 +21,9 @@ defmodule ExDhcp.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:elixir_uuid, "~> 1.2", only: [:test]},
-      {:credo, "~> 1.1", only: [:test, :dev]}
+      {:elixir_uuid, "~> 1.2", only: [:test, :dev]},
+      {:credo, "~> 1.1", only: [:test, :dev]},
+      {:dialyxir, "~> 0.5.1", only: [:test, :dev]}
     ]
   end
 end

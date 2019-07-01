@@ -39,7 +39,7 @@ defmodule ExDhcp.Options do
   @doc """
   Encode the specified list of options to a binary for a DHCP packet.
   """
-  @spec encode(Keyword.t | Map.t, [module]) :: iolist
+  @spec encode(keyword | map, [module]) :: iolist
   def encode(options, []), do: encode(options)
   def encode(options, [parser | rest]) do
     options

@@ -81,7 +81,7 @@ defmodule ExDhcp.Packet do
   @type udp_packet :: {
     :udp,
     :gen_udp.socket,
-    ExDhcp.ip4,
+    Utils.ip4,
     :inet.ancillary_data,
     binary}
 

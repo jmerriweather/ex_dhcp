@@ -1,6 +1,84 @@
 # ExDhcp
 
-**An instrumentable dhcp server for Elixir**
+**An instrumentable dhcp GenServer for Elixir**
+
+## General Description:
+
+Largely inspired by:  https://github.com/fhunleth/one_dhcpd
+We couldn't use GPL licenced material in-house, so this project was
+derived from `one_dhcpcd`.  It's a more fully-featured DHCP GenServer,
+with an opinionated interface that takes after the `GenStage` design.
+
+## Usage Notes:
+
+A minimal DhcpServer implements `handle_discover`, `handle_request`, and
+`handle_decline`, and might look something like this:
+
+
+```elixir
+
+defmodule MyDhcpServer do
+  use ExDhcp
+  alias ExDhcp.Packet
+
+  def start_link(init_state) do
+    ExDhcp.start_link(__MODULE__, init_state)
+  end
+
+  @impl true
+  def init(init_state), do: {:ok, init_state}
+
+  @impl true
+  def handle_discover(pack, xid, mac, state) do
+    # code
+    response = Packet.respond(pack, yiaddr: issued_your_address)
+    {:respond, response, state}
+  end
+
+  @impl true
+  def handle_request(pack, xid, mac, state) do
+    # code
+    response = Packet.respond(pack, yiaddr: issued_your_address)
+    {:respond, response, state}
+  end
+
+  @impl true
+  def handle_decline(pack, xid, mac, state) do
+    # code
+    response = Packet.respond(pack, yiaddr: new_issued_address)
+    {:respond, response, state}
+  end
+
+end
+
+```
+For more details, see the documentation.
+
+The DHCP protocol (https://en.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol) 
+listens in on port *67*, which is below the privileged port limit 
+*(1024)* for most, e.g. Linux distributions.  ExDhcp doesn't presume
+that it will be running as root or have access to that port, and by
+default listens in to port *6767*.  If you expect to have access to 
+privileged ports, you can set the port number in the module configuration.
+
+Alternatively, on most linux distributions you can use `iptables` to 
+forward broadcast UDP from port *67* to port *6767* and vice versa.  
+The following incantations will achieve this (if you're using a port besides
+6767, be sure to replace it wih your chosen port):
+
+```bash
+iptables -t nat -I PREROUTING -p udp --src 0.0.0.0 --dport 67 -j DNAT --to 0.0.0.0:6767
+iptables -t nat -A POSTROUTING -p udp --sport 6767 -j SNAT --to <server ip address>:67
+```
+
+There may be situations where you would like to bind DHCP activity to 
+a specific ethernet interface.  This is settable from the module settings,
+but in order to successfully bind to to the interface, on Linux machines,
+you'll have to do the following (as superuser):
+
+```bash
+setcap cap_net_raw=ep /path/to/beam.smp
+```
 
 ## TODOs
 
@@ -8,7 +86,6 @@
 - complete snapshot tests
 - complete documentation
 - CI testing suite
-- Credo/Dialyxir
 - ExCoveralls
 - publish to hex.pm
 

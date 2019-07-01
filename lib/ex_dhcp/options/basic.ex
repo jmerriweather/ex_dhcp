@@ -5,7 +5,7 @@ defmodule ExDhcp.Options.Basic do
   alias ExDhcp.Options
   import ExDhcp.Options.Macro
 
-  @behaviour ExDhcp.OptionsApi
+  @behaviour ExDhcp.Options.Api
 
   # Message types
   @dhcp_discover 1

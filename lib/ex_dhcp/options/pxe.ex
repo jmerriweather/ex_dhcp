@@ -6,7 +6,7 @@ defmodule ExDhcp.Options.Pxe do
   alias ExDhcp.Options
   import ExDhcp.Options.Macro
 
-  @behaviour ExDhcp.OptionsApi
+  @behaviour ExDhcp.Options.Api
 
   @tftp_server_name 66
   @bootfile_name 67
