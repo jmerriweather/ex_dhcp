@@ -2,6 +2,8 @@
 
 **An instrumentable dhcp GenServer for Elixir**
 
+<img src="https://api.travis-ci.com/RstorLabs/ex_dhcp.svg?branch=master"/>
+
 ## General Description:
 
 Largely inspired by:  https://github.com/fhunleth/one_dhcpd
