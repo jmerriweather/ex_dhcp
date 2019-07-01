@@ -7,7 +7,7 @@ defmodule ExDhcp.Options.Macro do
   basic parameter encoding, but the DHCP specification provides for
   additional, proprietary, and custom options encoding.
 
-  For example, PXE [https://en.wikipedia.org/wiki/Preboot_Execution_Environment]
+  For example, PXE ([https://en.wikipedia.org/wiki/Preboot_Execution_Environment]())
   uses an additional set of options to transmit booting information to the
   client.  These are implemented, as an example, in `ExDhcp.Options.Pxe`.
 

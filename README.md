@@ -95,7 +95,6 @@ setcap cap_net_raw=ep /path/to/beam.smp
 
 - finish snapshot helpers
 - complete snapshot tests
-- complete documentation
 - CI testing suite
 - publish to hex.pm
 
