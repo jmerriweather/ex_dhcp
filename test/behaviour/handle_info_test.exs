@@ -29,7 +29,7 @@ defmodule DhcpTest.Behaviour.HandleInfoTest do
     defmodule YesUdp do
       alias DhcpTest.Behaviour.CommonDhcp
       require CommonDhcp
-      CommonDhcp.with_port(32621)
+      CommonDhcp.with_port(32_621)
 
       @impl true
       def handle_info({:udp, _, _, _, data}, pid) do
@@ -47,7 +47,7 @@ defmodule DhcpTest.Behaviour.HandleInfoTest do
     test "we can trap a generic udp message" do
       {:ok, _} = YesUdp.start_link()
       {:ok, sock} = :gen_udp.open(0)
-      :gen_udp.send(sock, {127, 0, 0, 1}, 32621, "test")
+      :gen_udp.send(sock, {127, 0, 0, 1}, 32_621, "test")
       assert_receive {:recv, "test"}
     end
 

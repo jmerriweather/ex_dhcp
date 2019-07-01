@@ -63,7 +63,7 @@ defmodule ExDhcp do
     module: module,
     state: term,
     socket: :gen_udp.socket,
-    client_port: 1..32767,
+    client_port: 1..32_767,
     broadcast_addr: Utils.ip4
   }
 
@@ -117,7 +117,6 @@ defmodule ExDhcp do
   @impl true
   def handle_info(msg = {:udp, _, _, _, <<_::1888>> <> @magic_cookie <> _},
                   state = %{module: module}) do
-
     msg
     |> Packet.decode(module.options_parsers())
     |> packet_switch(state)

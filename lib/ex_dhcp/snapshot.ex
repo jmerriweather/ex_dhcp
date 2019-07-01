@@ -38,7 +38,7 @@ defmodule ExDhcp.Snapshot.Client do
 
         File.write!(filepath, response_txt)
 
-    after 60000 ->
+    after 60_000 ->
       raise "discover message not received"
     end
 

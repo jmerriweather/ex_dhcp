@@ -17,7 +17,7 @@ defmodule DhcpTest.Behaviour.HandleInformTest do
     require CommonDhcp
     CommonDhcp.with_port(6732)
 
-    def handle_inform(pack, xid,chaddr, test_pid) do
+    def handle_inform(pack, xid, chaddr, test_pid) do
       send(test_pid, {:inform, xid, pack, chaddr})
       {:norespond, :new_state}
     end

@@ -3,7 +3,7 @@ defmodule ExDhcp.Options.Basic do
   @moduledoc false
 
   alias ExDhcp.Options
-  import ExDhcp.OptionsMacro
+  import ExDhcp.Options.Macro
 
   @behaviour ExDhcp.OptionsApi
 
@@ -101,4 +101,3 @@ defmodule ExDhcp.Options.Basic do
   def encode_client_ndi({a, b, c}), do: <<a, b, c>>
   def encode_client_ndi(bin), do: bin
 end
-

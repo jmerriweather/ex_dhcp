@@ -26,8 +26,8 @@ defmodule ExDhcp.Packet do
   into {atom, value} pairs.
   """
 
-  alias ExDhcp.Options.Basic
   alias ExDhcp.Options
+  alias ExDhcp.Options.Basic
   alias ExDhcp.Utils
 
   @magic_cookie   <<0x63, 0x82, 0x53, 0x63>>

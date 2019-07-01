@@ -4,7 +4,7 @@ defmodule ExDhcp.Options.Pxe do
   """
 
   alias ExDhcp.Options
-  import ExDhcp.OptionsMacro
+  import ExDhcp.Options.Macro
 
   @behaviour ExDhcp.OptionsApi
 
@@ -13,7 +13,6 @@ defmodule ExDhcp.Options.Pxe do
   @tftp_server 150
   @tftp_config 209
   @tftp_root 210
-
 
   options tftp_server_name:         :string,
           bootfile_name:            :string,

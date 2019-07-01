@@ -22,7 +22,7 @@ defmodule DhcpTest.BasicTest do
         siaddr: {192, 168, 1, 1},
         subnet_mask: {255, 255, 255, 0},
         routers: [{192, 168, 1, 1}],
-        lease_time: 86400,
+        lease_time: 86_400,
         server: {192, 168, 1, 1},
         domain_name_servers: [
           {9, 7, 10, 15},
@@ -38,7 +38,7 @@ defmodule DhcpTest.BasicTest do
         siaddr: {192, 168, 1, 1},
         subnet_mask: {255, 255, 255, 0},
         routers: [{192, 168, 1, 1}],
-        lease_time: 86400,
+        lease_time: 86_400,
         server: {192, 168, 1, 1},
         domain_name_servers: [
           {9, 7, 10, 15},
@@ -68,9 +68,9 @@ defmodule DhcpTest.BasicTest do
 
   @dhcp_offer %Packet{
     op: 2, xid: 0x3903_F326, chaddr: {0x00, 0x05, 0x3C, 0x04, 0x8D, 0x59},
-    yiaddr: {192, 168, 1, 100}, siaddr: {192, 168, 1 ,1},
+    yiaddr: {192, 168, 1, 100}, siaddr: {192, 168, 1, 1},
     options: %{message_type: :offer, subnet_mask: {255, 255, 255, 0},
-      routers: [{192, 168, 1, 1}], lease_time: 86400,
+      routers: [{192, 168, 1, 1}], lease_time: 86_400,
       server: {192, 168, 1, 1}, domain_name_servers: [{9, 7, 10, 15},
                                                       {9, 7, 10, 16},
                                                       {9, 7, 10, 18}]}
@@ -91,9 +91,9 @@ defmodule DhcpTest.BasicTest do
 
   @dhcp_ack %Packet{
     op: 2, xid: 0x3903_F326, chaddr: {0x00, 0x05, 0x3C, 0x04, 0x8D, 0x59},
-    yiaddr: {192, 168, 1, 100}, siaddr: {192, 168, 1 ,1},
+    yiaddr: {192, 168, 1, 100}, siaddr: {192, 168, 1, 1},
     options: %{message_type: :ack, subnet_mask: {255, 255, 255, 0},
-      routers: [{192, 168, 1, 1}], lease_time: 86400,
+      routers: [{192, 168, 1, 1}], lease_time: 86_400,
       server: {192, 168, 1, 1}, domain_name_servers: [{9, 7, 10, 15},
                                                       {9, 7, 10, 16},
                                                       {9, 7, 10, 18}]}
