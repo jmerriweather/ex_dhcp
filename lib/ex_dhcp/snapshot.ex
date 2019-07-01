@@ -70,7 +70,7 @@ defmodule ExDhcp.Snapshot.Server do
   @spec output(Packet.t, state) :: {:norespond, state}
   defp output(p, state) do
     content = inspect p
-    Logger.info("received DHCP packet \n#{p}")
+    Logger.info("received DHCP packet \n#{content}")
 
     timestamp = DateTime.utc_now() |> DateTime.to_iso8601(:basic)
     filename = "dhcp-#{p.options.message_type}-#{timestamp}.txt"
