@@ -115,3 +115,16 @@ Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_do
 [1]: https://github.com/fhunleth/one_dhcpd
 [2]: https://en.wikipedia.org/wiki/Preboot_Execution_Environment
 [3]: https://en.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol
+
+
+Here's a simple footnote,[^1] and here's a longer one.[^bignote]
+
+[^1]: This is the first footnote.
+
+[^bignote]: Here's one with multiple paragraphs and code.
+
+Indent paragraphs to include them in the footnote.
+
+`{ my code }`
+
+Add as many paragraphs as you like.
