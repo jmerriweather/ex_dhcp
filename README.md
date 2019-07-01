@@ -6,8 +6,10 @@
 
 Largely inspired by:  https://github.com/fhunleth/one_dhcpd
 We couldn't use GPL licenced material in-house, so this project was
-derived from `one_dhcpcd`.  It's a more fully-featured DHCP GenServer,
+derived from `one_dhcpcd`.  It's an instrumentable DHCP GenServer,
 with an opinionated interface that takes after the `GenStage` design.
+At the moment, unlike one_dhcpd, it does not implement a full DHCP
+server, but 
 
 ## Usage Notes:
 

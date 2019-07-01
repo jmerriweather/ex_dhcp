@@ -42,6 +42,7 @@ defmodule ExDhcp do
         lease_time: lease_time,
         server: server_ip_address,
         domain_name_servers: [dns_server]))
+
       {:respond, response, new_state}
     end
 
@@ -50,6 +51,7 @@ defmodule ExDhcp do
       # code
       response = Packet.respond(request, :ack,
         yiaddr: issued_your_address ...)
+
       {:respond, response, state}
     end
 
@@ -58,6 +60,7 @@ defmodule ExDhcp do
       # code
       response = Packet.respond(request, :offer,
         yiaddr: new_issued_address ...)
+
       {:respond, response, state}
     end
 
