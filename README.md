@@ -9,6 +9,7 @@
 - complete documentation
 - CI testing suite
 - Credo/Dialyxir
+- ExCoveralls
 - publish to hex.pm
 
 ## Installation
