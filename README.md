@@ -29,23 +29,31 @@ defmodule MyDhcpServer do
   def init(init_state), do: {:ok, init_state}
 
   @impl true
-  def handle_discover(pack, xid, mac, state) do
+  def handle_discover(request, xid, mac, state) do
+    # code.  Should assign the unimplemented values 
+    # for the response below:
+    response = Packet.respond(request, 
+      yiaddr: issued_your_address,
+      siaddr: server_ip_address,
+      subnet_mask: subnet_mask,
+      routers: [router],
+      lease_time: lease_time,
+      server: server_ip_address,
+      domain_name_servers: [dns_server]))
+    {:respond, response, new_state}
+  end
+
+  @impl true
+  def handle_request(request, xid, mac, state) do
     # code
-    response = Packet.respond(pack, yiaddr: issued_your_address)
+    response = Packet.respond(request, yiaddr: issued_your_address ...)
     {:respond, response, state}
   end
 
   @impl true
-  def handle_request(pack, xid, mac, state) do
+  def handle_decline(request, xid, mac, state) do
     # code
-    response = Packet.respond(pack, yiaddr: issued_your_address)
-    {:respond, response, state}
-  end
-
-  @impl true
-  def handle_decline(pack, xid, mac, state) do
-    # code
-    response = Packet.respond(pack, yiaddr: new_issued_address)
+    response = Packet.respond(request, yiaddr: new_issued_address ...)
     {:respond, response, state}
   end
 
