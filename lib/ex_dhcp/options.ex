@@ -53,6 +53,8 @@ defmodule ExDhcp.Options do
 
   #codec functions.
 
+  # NB: sometimes DHCP clients will send a short instead of an integer.
+  # For example, "max_message_size" is a commonly requested parameter.
   @spec decode_integer(binary) :: integer
   def decode_integer(<<a::32>>), do: a
   def decode_integer(<<a::16>>), do: a
