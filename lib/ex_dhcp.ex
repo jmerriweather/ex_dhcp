@@ -15,7 +15,7 @@ defmodule ExDhcp do
     {ct_opts, mod_opts} = if opts[:dhcp_options] do
       Keyword.split(opts, [:dhcp_options])
     else
-      {[dhcp_options: [ExDhcp.BasicOptions]], opts}
+      {[dhcp_options: [ExDhcp.Options.Basic]], opts}
     end
 
     quote do
@@ -276,7 +276,7 @@ defmodule ExDhcp do
   - DHCP_ACK (5)
   - DHCP_NAK (6)
 
-  If you override the use of `ExDhcp.BasicOptions`, your DHCP options parser may
+  If you override the use of `ExDhcp.Options.Basic`, your DHCP options parser may
   have overwritten option 53 with a different atom/value assignment scheme.  In
   this case, you should use also use a custom handle_packet routine.
   """

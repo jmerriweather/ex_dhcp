@@ -26,7 +26,7 @@ defmodule ExDhcp.Packet do
   into {atom, value} pairs.
   """
 
-  alias ExDhcp.BasicOptions
+  alias ExDhcp.Options.Basic
   alias ExDhcp.Options
   alias ExDhcp.Utils
 
@@ -91,7 +91,7 @@ defmodule ExDhcp.Packet do
   pass the contents of a udp packet
   """
   @spec decode(udp_packet | binary, [module]) :: t | udp_packet
-  def decode(udp_packet, option_parsers \\ [BasicOptions])
+  def decode(udp_packet, option_parsers \\ [Basic])
   def decode({:udp, _, _, _, binary = <<_::1888>> <> @magic_cookie <> _}, option_parsers) do
     decode(binary, option_parsers)
   end
@@ -122,7 +122,7 @@ defmodule ExDhcp.Packet do
   Encode a message so that it can be put in a UDP packet
   """
   @spec encode(t) :: iolist
-  def encode(message, modules \\ [BasicOptions]) do
+  def encode(message, modules \\ [Basic]) do
     options = Options.encode(message.options, modules)
     ciaddr = Utils.ip2bin(message.ciaddr)
     yiaddr = Utils.ip2bin(message.yiaddr)
