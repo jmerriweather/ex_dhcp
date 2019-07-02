@@ -3,20 +3,25 @@ defmodule ExDhcp do
   Creates an OTP-compliant DHCP server.
 
   An ExDhcp module binds to a UDP port, listens to DHCP messages sent
-  to the port, and can resend (typically as a broadcast message) DHCP
-  messages in response.
+  to the port, and can resend DHCP messages
+  (typically as a broadcast message) in response.
 
-  You may instrument whatever state you would like into the server, the
+  You may instrument whatever state you would like into the server; the
   DHCP-specific contents will be encapsulated into the internals of the
   server itself and all of the state exposed to the callbacks will be
   your own state.
 
-  Note that **ExDhcp is not a fully functional DHCP server** which conforms
-  to the RFC 1531 specs.  It does *not* keep the state of the DHCP leases,
-  store DHCP lease information to durable storage, or manage arp tables.
-  However, you *could* use ExDhcp to implement that functionality.
+  **ExDhcp is not a fully-functional DHCP server** which conforms
+  to the _RFC 1531_ specs.
 
-  An example, minimal ExDhcp server might look something like this:
+  It does *not*:
+
+  - keep the state of the DHCP leases
+  - store DHCP lease information to durable storage
+  - manage arp tables
+
+  However, you *could* use ExDhcp to implement that functionality.
+  For example, minimal ExDhcp server might look something like this:
 
   ```elixir
   defmodule MyDhcpServer do
@@ -67,37 +72,46 @@ defmodule ExDhcp do
   end
   ```
 
-  Three callbacks are required:  `handle_discover/4`,
-  `handle_request/4`, and `handle_decline/4`.  You will need to implement these
-  three DHCP functionalities to have a successful experience assigning network
-  hosts.
+  You must implement the following three DHCP functionalities as callbacks to successfully
+  assign network hosts:
+  - `handle_discover/4`
+  - `handle_request/4`
+  - `handle_decline/4`
 
-  You may also want to implement `handle_inform/4` to manage a DHCP client
-  requesting early info, the `handle_release/4` callback to manage DHCP clients
-  relinquishing their leases, and `handle_packet/4` to generically handle
-  DHCP packets (most useful to monitor how other DHCP servers are responding on
-  your network)
+  You may also want to implement these callbacks:
+  - `handle_inform/4` to manage a DHCP client requesting early info
+  - `handle_release/4` to manage DHCP clients relinquishing their leases
+  - `handle_packet/4` to generically handle DHCP packets
+    - this is most useful to monitor how other DHCP servers are responding on your network
 
-  Each of these DHCP callbacks take four arguments, in order: the fully parsed
-  `ExDhcp.Packet` structure, the xid (transaction id), the mac address of the
-  client, and the current state of the ExDhcp GenServer.  These are provided as
-  arguments to enable you to easily trap their contents in pattern-matching
-  guards.
+  Each of these DHCP callbacks take four arguments, in order:
 
-  Note that the `ExDhcp.Packet` structure has an `:options` field, and you
+  1. the fully-parsed `ExDhcp.Packet` structure,
+  2. the _**xid**_ (transaction id)
+  3. the _**mac address**_ of the client
+  4. the current _**state**_ of the ExDhcp GenServer
+
+  These are provided as arguments to enable you to easily trap their contents
+  in pattern-matching guards.
+
+  _NB: the `ExDhcp.Packet` structure has an `:options` field, and you
   may want to emit tags that are outside of the provided `basic dhcp` options
   (see `ExDhcp.Options.Basic`).  In this case, you should implement your
   own parser module (see `ExDhcp.Options.Macro`) and instrument it into your
-  ExDhcp module using the `:dhcp_options` option, like so:
+  ExDhcp module using the `:dhcp_options` option like so:_
 
   ```elixir
     use Dhcp, dhcp_options: [ExDhcp.Options.Basic, YourParserModule, AnotherParserModule]
   ```
 
-  ExDhcp also provides the optional callbacks `handle_call/3`, `handle_cast/2`,
-  `handle_continue/2`, and `handle_info/2`.  These operate identically to their
-  counterparts in `GenServer`, but note that they are passed their encapsulated
-  state, not the raw state of the GenServer.
+  ExDhcp also provides these optional callbacks
+  - `handle_call/3`
+  - `handle_cast/2`
+  - `handle_continue/2`
+  - `handle_info/2`
+
+  These operate identically to their counterparts in `GenServer`, but note that they are passed
+  their encapsulated state, not the raw state of the GenServer.
   """
 
   use GenServer
@@ -151,22 +165,29 @@ defmodule ExDhcp do
 
   You may supply the following extra options:
 
-  - `:port` the UDP port you'd like ExDhcp to listen in on; defaults to 6767.
-    you may want to change this to 67 if you do not want to use iptables to
+  - `:port` the UDP port you'd like ExDhcp to listen in on; defaults to `6767`.
+    you may want to change this to `67` if you do not want to use iptables to
     redirect DHCP transactions to a nonprivileged Elixir server.
+
   - `:bind_to_device` (must be a binary string), the device you would like to
-    bind to for DHCP listening.  Note:  This requires `cap_net_raw` to be set.
-    In Linux systems, this is settable as superuser using the following command:
-      ```bash
-      setcap cap_net_raw=ep /path/to/beam.smp
-      ```
-    Note that this is most useful when you have a device with a internal- and
-    external- facing net interfaces and you would like to only respond to DHCP
-    requests coming from select directions.
+    bind to for DHCP listening.
+
+      - This is most useful when you have a device with a internal-and
+      -external-facing net interfaces and you would like to only respond to DHCP
+      requests coming from select directions.
+
+      - This requires `cap_net_raw` to be set. In Linux systems, this is settable as
+      superuser using the following command:
+
+          ```bash
+          setcap cap_net_raw=ep /path/to/beam.smp
+          ```
+
   - `:client_port` specify a nonstandard port to send the response to.  Most
-    useful for testing purposes; defaults to 68.
+    useful for testing purposes; defaults to `68`.
+
   - `:broadcast_addr` to specify a nonstandard address for responses.
-    Defaults to {255, 255, 255, 255}
+    Defaults to `{255, 255, 255, 255}`.
 
   See `GenServer.start_link/3` for further options.
   """
@@ -300,12 +321,12 @@ defmodule ExDhcp do
   ## dhcp-specific event handling implementation
 
   @typedoc """
-  DHCP callbacks should provide either a respond or norespond outcome.
+  DHCP callbacks should provide either a `:respond` or `:norespond` outcome.
 
-  In the case of the `:respond` outcome, a UDP response is sent over the
+  - In the case of the `:respond` outcome, a UDP response is sent over the
   open port earmarked for the specified mac address.
 
-  The `:norespond` outcome is a no-op.  No information is sent over the wire,
+  - The `:norespond` outcome is a no-op.  No information is sent over the wire,
   and the client may choose to either continue sending requests on the
   presumption that the UDP packets were dropped, or initiate an entirely new
   transaction.
@@ -366,7 +387,7 @@ defmodule ExDhcp do
   @doc """
   Invoked on the new DHCP server process when started by `ExDhcp.start_link/3`
 
-  Should, generally, emit `{:ok, state}`, where `state` is the initial state
+  Will typically emit `{:ok, state}`, where `state` is the initial state
   you expect to be contained within your ExDhcp GenServer.
   """
   @callback init(term) ::
@@ -376,7 +397,7 @@ defmodule ExDhcp do
     | {:stop, reason :: any}
 
   @doc """
-  responds to the DHCP discover query, as encoded in option 53.
+  Responds to the DHCP discover query, as encoded in _option 53_.
   """
   @callback handle_discover(
     packet::Packet.t,
@@ -385,7 +406,7 @@ defmodule ExDhcp do
     state::term) :: response
 
   @doc """
-  responds to the DHCP inform query, as encoded in option 53.
+  Responds to the DHCP inform query, as encoded in _option 53_.
   Defaults to ignore.
   """
   @callback handle_inform(
@@ -395,7 +416,7 @@ defmodule ExDhcp do
     state::term) :: response
 
   @doc """
-  responds to the DHCP release query, as encoded in option 53.
+  Responds to the DHCP release query, as encoded in _option 53_.
   Defaults to ignore.
   """
   @callback handle_release(
@@ -405,7 +426,7 @@ defmodule ExDhcp do
     state::term) :: response
 
   @doc """
-  responds to the DHCP request query, as encoded in option 53.
+  Responds to the DHCP request query, as encoded in _option 53_.
   """
   @callback handle_request(
     packet::Packet.t,
@@ -414,7 +435,7 @@ defmodule ExDhcp do
     state::term)  :: response
 
   @doc """
-  responds to the DHCP decline query, as encoded in option 53.
+  Responds to the DHCP decline query, as encoded in _option 53_.
   """
   @callback handle_decline(
     packet::Packet.t,
@@ -439,8 +460,8 @@ defmodule ExDhcp do
   - DHCP_NAK (6)
 
   If you override the use of `ExDhcp.Options.Basic`, your DHCP options parser may
-  have overwritten option 53 with a different atom/value assignment scheme.  In
-  this case, you should use also use a custom handle_packet routine.
+  have overwritten _option 53_ with a different atom/value assignment scheme.  In
+  this case, you should use also use a custom `handle_packet` routine.
   """
   @callback handle_packet(
     packet::Packet.t,
@@ -455,7 +476,7 @@ defmodule ExDhcp do
   # you can treat your DHCP server as a fully OTP-compliant GenServer.
 
   @doc "See `GenServer.handle_call/3`"
-  @callback handle_call(term, GenServer.from, state::term) ::
+  @callback handle_call(term, from::GenServer.from, state::term) ::
     {:reply, reply :: term, new_state::term}
     | {:reply, reply :: term, new_state::term, timeout | :hibernate | {:continue, term}}
     | {:noreply, new_state::term}
