@@ -1,6 +1,6 @@
 # ExDhcp
 
-**An instrumentable dhcp GenServer for Elixir**
+**An instrumentable DHCP GenServer for Elixir**
 
 _Largely inspired by [one_dhcpd][1]_
 
@@ -38,10 +38,10 @@ defmodule MyDhcpServer do
 
   @impl true
   def handle_discover(request, xid, mac, state) do
-    
+
     # insert code here. Should assign the unimplemented values 
     # for the response below:
-    
+
     response = Packet.respond(request, :offer,
       yiaddr: issued_your_address,
       siaddr: server_ip_address,
@@ -50,7 +50,7 @@ defmodule MyDhcpServer do
       lease_time: lease_time,
       server: server_ip_address,
       domain_name_servers: [dns_server]))
-      
+
     {:respond, response, new_state}
   end
 
@@ -58,10 +58,10 @@ defmodule MyDhcpServer do
   def handle_request(request, xid, mac, state) do
     
     # insert code here
-    
+
     response = Packet.respond(request, :ack,
       yiaddr: issued_your_address ...)
-      
+
     {:respond, response, state}
   end
 
@@ -69,10 +69,10 @@ defmodule MyDhcpServer do
   def handle_decline(request, xid, mac, state) do
     
     # insert code here
-    
+
     response = Packet.respond(request, :offer,
       yiaddr: new_issued_address ...)
-      
+
     {:respond, response, state}
   end
 
@@ -93,9 +93,9 @@ Alternatively, on most linux distributions you can use `iptables` to forward bro
 iptables -t nat -I PREROUTING -p udp --src 0.0.0.0 --dport 67 -j DNAT --to 0.0.0.0:6767
 iptables -t nat -A POSTROUTING -p udp --sport 6767 -j SNAT --to <server ip address>:67
 ```
-_NB: If you're using a port besides *6767*, be sure to replace it with your chosen port_
+_NB: If you're using a port besides *6767*, be sure to replace it with your chosen port._
 
-There may be situations where you would like to bind DHCP activity to a specific ethernet interface; this is settable from the module settings
+There may be situations where you would like to bind DHCP activity to a specific ethernet interface; this is settable from the module settings.
 
 In order to successfully bind to the interface on Linux machines, do the following as superuser:
 

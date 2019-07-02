@@ -37,8 +37,10 @@ defmodule ExDhcp do
 
     @impl true
     def handle_discover(request, xid, mac, state) do
-      # code.  Should assign the unimplemented values
+
+      # insert code here.  Should assign the unimplemented values
       # for the response below:
+
       response = Packet.respond(request, :offer,
         yiaddr: issued_your_address,
         siaddr: server_ip_address,
@@ -53,7 +55,9 @@ defmodule ExDhcp do
 
     @impl true
     def handle_request(request, xid, mac, state) do
-      # code
+
+      # insert code here.
+
       response = Packet.respond(request, :ack,
         yiaddr: issued_your_address ...)
 
@@ -62,7 +66,8 @@ defmodule ExDhcp do
 
     @impl true
     def handle_decline(request, xid, mac, state) do
-      # code
+      # insert code here.
+
       response = Packet.respond(request, :offer,
         yiaddr: new_issued_address ...)
 
