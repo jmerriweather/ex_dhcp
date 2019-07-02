@@ -387,7 +387,7 @@ defmodule ExDhcp do
   @doc """
   Invoked on the new DHCP server process when started by `ExDhcp.start_link/3`
 
-  Will typically emit `{:ok, state}`, where `state` is the initial state
+  Will typically emit `{:ok, state}`, where `state` is the _initial state_
   you expect to be contained within your ExDhcp GenServer.
   """
   @callback init(term) ::
@@ -444,24 +444,25 @@ defmodule ExDhcp do
     state::term)  :: response
 
   @doc """
-  Responds to other DHCP queries or broadcast packets that might have floated
-  past the server.
+  Responds to _other_ DHCP queries or broadcast packet types your typical server may
+  not be setup to listen to.
 
-  There are situations where a DHCP request might have been
-  handled by another server already and broadcasted over the layer 2 network.
-  To avoid awkward leader contention or race conditions, your server may want
-  to take actions in its internal state based on the information transmitted
-  in these packets.  Use this callback to implement these features.
+  Leader contention or race conditions may arise in certain situations. For example,
+  a DHCP request might have been handled by another server already and broadcasted
+  over the layer 2 network. To avoid these issues, your server may want to act on its
+  internal state based on the information transmitted in these packets.
 
-  Typically, the server queries you might want to monitor are:
+  Use this callback to implement these features.
+
+  Server queries you might also want to monitor are:
 
   - DHCP_OFFER (2)
   - DHCP_ACK (5)
   - DHCP_NAK (6)
 
-  If you override the use of `ExDhcp.Options.Basic`, your DHCP options parser may
-  have overwritten _option 53_ with a different atom/value assignment scheme.  In
-  this case, you should use also use a custom `handle_packet` routine.
+  You should also use a custom `handle_packet` routine if you override `ExDhcp.Options.Basic`
+  with your own DHCP options parser that overwrites _option 53_ with a different atom/value
+  assignment scheme.
   """
   @callback handle_packet(
     packet::Packet.t,
