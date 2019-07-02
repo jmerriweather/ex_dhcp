@@ -67,7 +67,7 @@ defmodule ExDhcp.Options.Basic do
                           :nak | :release | :inform
 
   @doc """
-  Decodes the `message_type` (code #{@message_type}) field from a DHCP packet.
+  Decodes the `message_type` (_code #{@message_type}_) field from a DHCP packet.
 
   Translates the value according to the following table:
 
@@ -95,7 +95,7 @@ defmodule ExDhcp.Options.Basic do
   def decode_message_type(data), do: data
 
   @doc """
-  Encodes the `message_type` (code #{@message_type}) field atom back
+  Encodes the `message_type` (_code #{@message_type}_) field atom back
   into a DHCP binary format.
 
   See `decode_message_type/1` for the translation table.
@@ -112,7 +112,7 @@ defmodule ExDhcp.Options.Basic do
   def encode_message_type(type), do: type
 
   @doc """
-  Decodes the `parameter_request_list` (code #{@parameter_request_list})
+  Decodes the `parameter_request_list` (_code #{@parameter_request_list}_)
   from a DHCP packet.
 
   Returns a list of integers that represent parameters that the DHCP client
@@ -125,7 +125,7 @@ defmodule ExDhcp.Options.Basic do
   def decode_parameter_list(data), do: :erlang.binary_to_list(data)
 
   @doc """
-  Encodes the `parameter_request_list` (code #{@parameter_request_list})
+  Encodes the `parameter_request_list` (_code #{@parameter_request_list}_)
   into the DHCP binary format.
 
   See `decode_parameter_list/1` for details.
@@ -137,14 +137,14 @@ defmodule ExDhcp.Options.Basic do
   @type client_ndi_type :: {byte, byte, byte}
 
   @doc """
-  Decodes the `client_ndi` information (code #{@client_ndi}) from the DHCP
+  Decodes the `client_ndi` information (_code #{@client_ndi}_) from the DHCP
   binary format into an erlang triple.
   """
   @spec decode_client_ndi(binary) :: client_ndi_type
   def decode_client_ndi(_data = <<a, b, c>>), do: {a, b, c}
 
   @doc """
-  Encodes the `client_ndi` information (code #{@client_ndi}) from an erlang
+  Encodes the `client_ndi` information (_code #{@client_ndi}_) from an erlang
   triple into the DHCP binary format.
   """
   @spec encode_client_ndi(client_ndi_type | binary) :: binary

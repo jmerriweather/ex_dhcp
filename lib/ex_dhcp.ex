@@ -12,7 +12,7 @@ defmodule ExDhcp do
   your own state.
 
   **ExDhcp is not a fully-functional DHCP server** which conforms
-  to the _RFC 1531_ specs.
+  to the _[RFC 1531](https://tools.ietf.org/html/rfc1531)_ specs.
 
   It does *not*:
 
