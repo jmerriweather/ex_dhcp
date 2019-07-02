@@ -62,7 +62,7 @@ defmodule ExDhcp.Options.Basic do
   #############################################################################
   ## message type translations
 
-  @typedoc "DHCP messages must fall into one of these listed categories"
+  @typedoc "DHCP messages must fall into one of these listed categories."
   @type message_types():: :discover | :offer | :request | :decline | :ack |
                           :nak | :release | :inform
 
@@ -115,10 +115,11 @@ defmodule ExDhcp.Options.Basic do
   Decodes the `parameter_request_list` (code #{@parameter_request_list})
   from a DHCP packet.
 
-  This is a numerical list of parameters that that the DHCP client is
-  requesting from the DHCP server; the server is not required to respond to
-  them, though if key parameters are missing, the client *might* send a DHCP
-  decline response.
+  Returns a list of integers that represent parameters that the DHCP client
+  is currently requesting from the DHCP server.
+
+  The server is not required to respond to them, though if key parameters
+  are missing, the client *might* send a DHCP decline response.
   """
   @spec decode_parameter_list(binary) :: list
   def decode_parameter_list(data), do: :erlang.binary_to_list(data)
@@ -127,12 +128,12 @@ defmodule ExDhcp.Options.Basic do
   Encodes the `parameter_request_list` (code #{@parameter_request_list})
   into the DHCP binary format.
 
-  See `decode_parameter_list/1` for details
+  See `decode_parameter_list/1` for details.
   """
   @spec encode_parameter_list(list) :: binary
   def encode_parameter_list(lst), do: :erlang.list_to_binary(lst)
 
-  @typedoc "Erlang triple format for `client_ndi` information"
+  @typedoc "Erlang triple format for `client_ndi` information."
   @type client_ndi_type :: {byte, byte, byte}
 
   @doc """

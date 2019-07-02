@@ -1,7 +1,10 @@
 defmodule ExDhcp.Options.Pxe do
 
   @moduledoc """
-  DHCP options for Pxe booting systems.
+  DHCP options for [PXE](https://en.wikipedia.org/wiki/Preboot_Execution_Environment)
+  (_**P**reboot e**X**ecution **E**nvironment_) booting systems.
+
+  _NB: Learn more about PXE here: [Wikipedia](https://en.wikipedia.org/wiki/Preboot_Execution_Environment)_
   """
 
   import ExDhcp.Options.Macro
