@@ -7,12 +7,17 @@ defmodule ExDhcp.MixProject do
       version: "0.1.0",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
+      description: description(),
       deps: deps(),
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [coveralls: :test, "coveralls.detail": :test, "coveralls.post": :test, "coveralls.html": :test],
       source_url: "https://github.com/RstorLabs/ex_dhcp",
       package: package()
     ]
+  end
+
+  defp description do
+    "A library to help implementing servers which need to issue DHCP requests"
   end
 
   defp package do
