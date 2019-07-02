@@ -8,9 +8,11 @@ _Largely inspired by [one_dhcpd][1]_
 
 ## General Description
 
-ExDhcp is an instrumentable DHCP GenServer, with an opinionated interface that takes after the `GenStage` design.  We couldn't use GPL licenced material in-house, so this project was derived from `one_dhcpcd`.  At the moment, unlike `one_dhcpcd`, it does not implement a full DHCP server, but you *could* use ExDhcp to implement that functionality.
+ExDhcp is an instrumentable DHCP GenServer, with an opinionated interface that takes after the `GenStage` design.  We couldn't use GPL licenced material in-house, so this project was derived from `one_dhcpcd`. 
 
-If you need DHCP functionality for some other purpose (such as [PXE][2] booting), ExDhcp is ideal.  If you would like to easily implement distributed DHCP with custom code hooks for custom functionality, ExDhcp might be for you.
+At the moment, unlike `one_dhcpcd`, it does not implement a full DHCP server, but you *could* use ExDhcp to implement that functionality. ExDhcp is ideal for using DHCP functionality for some other purpose, such as [PXE][2] booting.
+
+If you would like to easily implement distributed DHCP with custom code hooks for custom functionality, ExDhcp might be for you.
 
 ## Usage Notes
 
