@@ -13,11 +13,11 @@ defmodule ExDhcp.Options.Macro do
   client.  These are implemented in `ExDhcp.Options.Pxe` for demonstration.
 
   If you need to implement additional options parsing use this module,
-  include it as an option in the `use ExDhcp` option along with `ExDhcp.Options.Basic`
+  include it as an option in the `use ExDhcp` directive along with `ExDhcp.Options.Basic`
   (unless you want to override it):
 
   ```elixir
-    use ExDhcp, dhcp_options: [MyParser, ExDhcp.Options.Basic]
+  use ExDhcp, dhcp_options: [MyParser, ExDhcp.Options.Basic]
   ```
 
   ### Standard and Custom Parsing
@@ -36,17 +36,16 @@ defmodule ExDhcp.Options.Macro do
   | `:string`  | `binary`                | variable octets          |
   | `:uuid`    | `<<::binary-size(36)>>` | 16 octets                |
   | `:integer` | `integer`               | 4 octet (32 bit) integer |
-  | `:short`   | `integer`               | 2 octet (32 bit) integer |
-  | `:byte`    | `integer`               | 1 octet (32 bit) integer |
+  | `:short`   | `integer`               | 2 octet (16 bit) integer |
+  | `:byte`    | `integer`               | 1 octet (8 bit) integer  |
   | `:boolean` | `boolean`               | one octet, either 1 or 0 |
 
   In the case of a custom codec, you must implement two functions:
-  - `encode_<atom_value>/1`
-    - The encoder should take a raw binary and convert it to an appropriate
-    erlang term representing the atom.
-  - `decode_<atom_value>/1`
-    - The decoder should take an erlang term and convert it to an appropriate
-    binary to be packed into the DHCP packet.
+  - `encode_<atom_value>/1`: &nbsp; The encoder should take a raw binary and convert
+  it to an appropriate erlang term representing the atom.
+
+  - `decode_<atom_value>/1`: &nbsp; The decoder should take an erlang term and convert
+  it to an appropriate binary to be packed into the DHCP packet.
 
   `options/1` will append a relevant table of encoders/decoders into your module
   documentation as a feature.
