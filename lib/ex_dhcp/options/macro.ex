@@ -207,7 +207,7 @@ defmodule ExDhcp.Options.Macro do
     """
     #{predoc}
 
-    this module implements the following dhcp options encodings:
+    This module implements the following DHCP options encodings:
 
     | option atom | DHCP option code | type / codec |
     | ----------- | ---------------- | ------------ |
