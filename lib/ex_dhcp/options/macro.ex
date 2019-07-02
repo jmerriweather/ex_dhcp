@@ -2,36 +2,30 @@
 defmodule ExDhcp.Options.Macro do
 
   @moduledoc """
-  This module makes it easier to create custom encoding and decoding
+  This module provides methods that facilitate custom encoding and decoding
   strategies for DHCP packet options.  `ExDhcp.Options.Basic` provides
-  basic parameter encoding, but the DHCP specification provides for
+  basic parameter encoding; the full DHCP specification provides for
   additional, proprietary, and custom options encoding.
 
-  For example, PXE ([https://en.wikipedia.org/wiki/Preboot_Execution_Environment]())
+  For example, [PXE](https://en.wikipedia.org/wiki/Preboot_Execution_Environment)
+  (_**P**reboot e**X**ecution **E**nvironment_)
   uses an additional set of options to transmit booting information to the
-  client.  These are implemented, as an example, in `ExDhcp.Options.Pxe`.
+  client.  These are implemented in `ExDhcp.Options.Pxe` for demonstration.
 
-  If you need to implement additional options parsing use this module, and
-  include it as an option in the `use ExDhcp` option (don't forget to include
-  `ExDhcp.Options.Basic` - unless you want to override it):
+  If you need to implement additional options parsing use this module,
+  include it as an option in the `use ExDhcp` directive along with `ExDhcp.Options.Basic`
+  (unless you want to override it):
 
   ```elixir
-    use ExDhcp, dhcp_options: [MyParser, ExDhcp.Options.Basic]
+  use ExDhcp, dhcp_options: [MyParser, ExDhcp.Options.Basic]
   ```
 
-  Then you're going to want to implement your parser.  You should
-  pass the `options/1` macro a keyword list of parameter names and
-  datatypes.  The options parser will search for a module parameter
+  ### Standard and Custom Parsing
+  Pass the `options/1` macro a keyword list of parameter names and
+  datatypes.  The options parser will then search for a module parameter
   corresponding to the keyword, and assign that integer as the
   options parameter.  The type will indicate either a standard type
-  codec; or an atom for a custom codec.
-
-  In the case of a custom codec, you should implement two functions:
-  `encode_<atom_value>/1` and `decode_<atom_value>/1`; the encoder
-  should take a raw binary and convert it to an appropriate erlang
-  term representing the atom; the decoder should take an erlang term
-  and convert it to an appropriate binary to be packed into the DHCP
-  packet.
+  codec or an atom for a custom codec.
 
   The following standard types are implemented:
 
@@ -42,9 +36,19 @@ defmodule ExDhcp.Options.Macro do
   | `:string`  | `binary`                | variable octets          |
   | `:uuid`    | `<<::binary-size(36)>>` | 16 octets                |
   | `:integer` | `integer`               | 4 octet (32 bit) integer |
-  | `:short`   | `integer`               | 2 octet (32 bit) integer |
-  | `:byte`    | `integer`               | 1 octet (32 bit) integer |
+  | `:short`   | `integer`               | 2 octet (16 bit) integer |
+  | `:byte`    | `integer`               | 1 octet (8 bit) integer  |
   | `:boolean` | `boolean`               | one octet, either 1 or 0 |
+
+  In the case of a custom codec, you must implement two functions:
+  - `encode_<atom_value>/1`: &nbsp; The encoder should take a raw binary and convert
+  it to an appropriate erlang term representing the atom.
+
+  - `decode_<atom_value>/1`: &nbsp; The decoder should take an erlang term and convert
+  it to an appropriate binary to be packed into the DHCP packet.
+
+  `options/1` will append a relevant table of encoders/decoders into your module
+  documentation as a feature.
 
   Here is an example implementation of a parser:
 
@@ -78,11 +82,10 @@ defmodule ExDhcp.Options.Macro do
 
   ```
 
-  Refer to the code for `ExDhcp.Options.Basic` and `ExDhcp.Options.Pxe` as an
+  Refer to `ExDhcp.Options.Basic` and `ExDhcp.Options.Pxe` source codes as an
   additional reference.
 
-  Note that `options/1` will append a relevant table of encoders/decoders
-  into your module documentation.
+  _Learn more about PXE here: [Wikipedia](https://en.wikipedia.org/wiki/Preboot_Execution_Environment)_
   """
 
   @options_encodable [:ip, :iplist, :string, :uuid, :integer, :short, :byte, :boolean]
@@ -143,7 +146,7 @@ defmodule ExDhcp.Options.Macro do
   @doc """
   Generates code for codecs based on a list of atom / type keys.
 
-  See `ExDhcp.Options.Macro` for details on the strategy for using
+  See `ExDhcp.Options.Macro` for details and strategies for using
   this macro.
   """
   defmacro options(options_list) do
@@ -207,7 +210,7 @@ defmodule ExDhcp.Options.Macro do
     """
     #{predoc}
 
-    this module implements the following dhcp options encodings:
+    This module implements the following DHCP options encodings:
 
     | option atom | DHCP option code | type / codec |
     | ----------- | ---------------- | ------------ |
