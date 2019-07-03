@@ -56,7 +56,7 @@ defmodule ExDhcp.Options.Basic do
           client_identifier:        :string,
           client_system:            :string,
           client_ndi:               :client_ndi,
-          uuid_guid:                :uuid,
+          uuid_guid:                :string,
           forcerenew_nonce_capable: :boolean
 
   #############################################################################

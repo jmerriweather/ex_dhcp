@@ -34,7 +34,6 @@ defmodule ExDhcp.Options.Macro do
   | `:ip`      | `{a, b, c, d}`          | 4 octets                 |
   | `:iplist`  | `list({a, b, c, d})`    | *N*x4 octets             |
   | `:string`  | `binary`                | variable octets          |
-  | `:uuid`    | `<<::binary-size(36)>>` | 16 octets                |
   | `:integer` | `integer`               | 4 octet (32 bit) integer |
   | `:short`   | `integer`               | 2 octet (16 bit) integer |
   | `:byte`    | `integer`               | 1 octet (8 bit) integer  |
@@ -88,7 +87,7 @@ defmodule ExDhcp.Options.Macro do
   _Learn more about PXE here: [Wikipedia](https://en.wikipedia.org/wiki/Preboot_Execution_Environment)_
   """
 
-  @options_encodable [:ip, :iplist, :string, :uuid, :integer, :short, :byte, :boolean]
+  @options_encodable [:ip, :iplist, :string, :integer, :short, :byte, :boolean]
 
   defp encode_fn(at_form, style, _) when style in @options_encodable do
     quote do Options.unquote(:"encode_#{style}")(unquote(at_form), value) end

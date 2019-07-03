@@ -104,13 +104,4 @@ defmodule ExDhcp.Options do
   def encode_boolean(type, false), do: <<type, 1, 0>>
   def encode_boolean(type, value), do: <<type, 1, value>>
 
-  @spec decode_uuid(binary) :: String.t
-  def decode_uuid(val), do: UUID.binary_to_string!(val)
-  @spec encode_uuid(typecode, String.t) :: binary
-  def encode_uuid(type, val) when :erlang.size(val) == 36 do
-    encode_string(type, UUID.string_to_binary!(val))
-  end
-  def encode_uuid(type, val) when :erlang.size(val) == 16 do
-    encode_string(type, val)
-  end
 end
