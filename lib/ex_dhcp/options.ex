@@ -52,9 +52,9 @@ defmodule ExDhcp.Options do
   end
   @spec encode(Enumerable.t) :: iolist
   def encode(options) do
-    [ options
-      |> Enum.map(&encode_fragment/1)
-      |> Enum.sort | <<@option_finish>>]
+    [options
+     |> Enum.map(&encode_fragment/1)
+     |> Enum.sort | <<@option_finish>>]
   end
 
   defp encode_fragment(binary) when is_binary(binary), do: binary
