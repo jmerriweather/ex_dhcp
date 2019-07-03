@@ -9,7 +9,7 @@ defmodule ExDhcpTest.RegressionTest do
   @nuc_packet %Packet{
     chaddr: {244, 77, 48, 108, 147, 178},
     ciaddr: {0, 0, 0, 0},
-    flags: 32768,
+    flags: 32_768,
     giaddr: {0, 0, 0, 0},
     hlen: 6,
     hops: 0,
@@ -29,7 +29,7 @@ defmodule ExDhcpTest.RegressionTest do
     },
     secs: 28,
     siaddr: {0, 0, 0, 0},
-    xid: 205646044,
+    xid: 205_646_044,
     yiaddr: {0, 0, 0, 0}
   }
 
@@ -46,6 +46,58 @@ defmodule ExDhcpTest.RegressionTest do
     |> Packet.encode
     |> :erlang.iolist_to_binary
     |> Packet.decode
+  end
+
+  ## regression test discovered 2 Jul 2019.
+  ## A packet with a payload with both Basic and Pxe response items should have been encoded.
+  ## it was not.  This replicates a minimal error condition.
+
+  defmodule DualParser do
+    use ExDhcp, dhcp_options: [ExDhcp.Options.Basic, ExDhcp.Options.Pxe]
+
+    @testhost {192, 168, 0, 1}
+
+    @impl true
+    def init(v), do: {:ok, v}
+
+    @impl true
+    def handle_discover(packet, _xid, _mac, state) do
+
+      response = Packet.respond(packet, :offer,
+         server: @testhost,     # basic parameter
+         tftp_server: @testhost # pxe parameter
+      )
+
+      {:respond, response, state}
+    end
+
+    @impl true
+    def handle_request(_, _, _, _), do: {:norespond, :pumpkin}
+
+    @impl true
+    def handle_decline(_, _, _, _), do: {:norespond, :pumpkin}
+  end
+
+  #
+  #  This was because the encode() functionality failed to encode across both modules.
+  #
+  @testhost {192, 168, 0, 1}
+  @localhost {127, 0, 0, 1}
+
+  @dhcp_discover %Packet{
+    op: 1, xid: 0x3903_F326, chaddr: {0x00, 0x05, 0x3C, 0x04, 0x8D, 0x59},
+    options: %{message_type: :discover, requested_address: {192, 168, 1, 100},
+    parameter_request_list: [1, 3, 15, 6]}
+  }
+
+  test "multiple module encoding" do
+    DualParser.start_link(self(), port: 6801, client_port: 6802, broadcast_addr: @localhost)
+    {:ok, sock} = :gen_udp.open(6802, [:binary, active: true])
+    disc_pack = Packet.encode(@dhcp_discover)
+    :gen_udp.send(sock, {127, 0, 0, 1}, 6801, disc_pack)
+    assert_receive {:udp, _, _, _, binary}
+    assert %Packet{options: %{server: @testhost, tftp_server: @testhost}} =
+      Packet.decode(binary, [ExDhcp.Options.Basic, ExDhcp.Options.Pxe])
   end
 
 end
