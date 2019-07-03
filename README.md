@@ -85,7 +85,7 @@ For more details, see the [documentation](https://hexdocs.pm/ex_dhcp).
 
 The [DHCP protocol][3] listens in on port *67*, which is below the privileged port limit *(1024)* for most, e.g. Linux distributions.
 
-ExDhcp doesn't presume that it will be running as root or have access to that port, and by default listens in to port *6767*.  If you expect to have access to privileged ports, you can set the port number in the module configuration.
+ExDhcp doesn't presume that it will be running as root or have access to that port, and by default listens in to port *6767*.  If you expect to have access to privileged ports, you can set the port number in the module `start_link` options.
 
 Alternatively, on most linux distributions you can use `iptables` to forward broadcast UDP from port *67* to port *6767* and vice versa.  The following incantations will achieve this:
 
@@ -97,7 +97,7 @@ _NB: If you're using a port besides *6767*, be sure to replace it with your chos
 
 ### Interface Binding
 
-There may be situations where you would like to bind DHCP activity to a specific ethernet interface; this is settable from the module settings.
+There may be situations where you would like to bind DHCP activity to a specific ethernet interface; this is settable in the module `start_link` options.
 
 In order to successfully bind to the interface on Linux machines, do the following as superuser:
 
