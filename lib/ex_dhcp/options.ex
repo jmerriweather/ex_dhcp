@@ -43,12 +43,18 @@ defmodule ExDhcp.Options do
   def encode(options, []), do: encode(options)
   def encode(options, [parser | rest]) do
     options
+    |> Stream.reject(fn
+      {_key, value} -> is_nil(value)
+      _ -> false
+    end)
     |> Stream.map(&parser.encode/1)
     |> encode(rest)
   end
   @spec encode(Enumerable.t) :: iolist
   def encode(options) do
-    [Enum.map(options, &encode_fragment/1) | <<@option_finish>>]
+    [ options
+      |> Enum.map(&encode_fragment/1)
+      |> Enum.sort | <<@option_finish>>]
   end
 
   defp encode_fragment(binary) when is_binary(binary), do: binary

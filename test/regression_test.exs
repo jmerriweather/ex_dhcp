@@ -100,4 +100,48 @@ defmodule ExDhcpTest.RegressionTest do
       Packet.decode(binary, [ExDhcp.Options.Basic, ExDhcp.Options.Pxe])
   end
 
+  defmodule NilParser do
+    use ExDhcp
+
+    @localhost {127, 0, 0, 1}
+
+    @impl true
+    def init(v), do: {:ok, v}
+
+    @impl true
+    def handle_discover(packet, _xid, _mac, state) do
+
+      response = Packet.respond(packet, :offer,
+         server: @localhost,     # basic parameter
+         client_system: nil     # pxe parameter
+      )
+
+      {:respond, response, state}
+    end
+
+    @impl true
+    def handle_request(_, _, _, _), do: {:norespond, :pumpkin}
+    @impl true
+    def handle_decline(_, _, _, _), do: {:norespond, :pumpkin}
+  end
+
+  @localhost {127, 0, 0, 1}
+
+  @dhcp_discover %Packet{
+    op: 1, xid: 0x3903_F326, chaddr: {0x00, 0x05, 0x3C, 0x04, 0x8D, 0x59},
+    options: %{message_type: :discover, requested_address: {192, 168, 1, 100},
+    parameter_request_list: [1, 3, 15, 6]}
+  }
+
+  test "nil module encoding" do
+    NilParser.start_link(self(), port: 6803, client_port: 6804, broadcast_addr: @localhost)
+    {:ok, sock} = :gen_udp.open(6804, [:binary, active: true])
+    disc_pack = Packet.encode(@dhcp_discover)
+    :gen_udp.send(sock, {127, 0, 0, 1}, 6803, disc_pack)
+    assert_receive {:udp, _, _, _, binary}
+    srv = Packet.decode(binary).options
+    assert @localhost == srv.server
+    refute Map.has_key?(srv, :client_system)
+  end
+
 end
