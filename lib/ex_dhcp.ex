@@ -161,7 +161,7 @@ defmodule ExDhcp do
     end
   end
 
-  @internal_opts [:port, :bind, :client_port, :broadcast_addr]
+  @internal_opts [:port, :bind_to_device, :client_port, :broadcast_addr]
   @default_port 6767      # assume we're not running as root.
   @default_client_port 68
   @default_broadcast_addr {255, 255, 255, 255}
