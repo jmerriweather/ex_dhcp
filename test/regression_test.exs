@@ -9,7 +9,7 @@ defmodule ExDhcpTest.RegressionTest do
   @nuc_packet %Packet{
     chaddr: {244, 77, 48, 108, 147, 178},
     ciaddr: {0, 0, 0, 0},
-    flags: 32768,
+    flags: 32_768,
     giaddr: {0, 0, 0, 0},
     hlen: 6,
     hops: 0,
@@ -29,7 +29,7 @@ defmodule ExDhcpTest.RegressionTest do
     },
     secs: 28,
     siaddr: {0, 0, 0, 0},
-    xid: 205646044,
+    xid: 205_646_044,
     yiaddr: {0, 0, 0, 0}
   }
 
