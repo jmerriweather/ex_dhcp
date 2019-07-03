@@ -1,6 +1,6 @@
 # ExDhcp
 
-**An instrumentable DHCP GenServer for Elixir**
+**An instrumentable DHCP Packet GenServer for Elixir**
 
 _Largely inspired by [one_dhcpd][1]_
 
@@ -16,7 +16,7 @@ If you would like to easily implement distributed DHCP with custom code hooks fo
 
 ## Usage Notes
 
-A minimal DhcpServer implements the following three methods:
+A minimal ExDhcp server implements the following three methods:
 - `handle_discover`
 - `handle_request`
 - `handle_decline`
@@ -79,13 +79,13 @@ defmodule MyDhcpServer do
 end
 
 ```
-For more details, see the documentation.
+For more details, see the [documentation](https://hexdocs.pm/ex_dhcp).
 
 ### Deployment
 
 The [DHCP protocol][3] listens in on port *67*, which is below the privileged port limit *(1024)* for most, e.g. Linux distributions.
 
-ExDhcp doesn't presume that it will be running as root or have access to that port, and by default listens in to port *6767*.  If you expect to have access to privileged ports, you can set the port number in the module configuration.
+ExDhcp doesn't presume that it will be running as root or have access to that port, and by default listens in to port *6767*.  If you expect to have access to privileged ports, you can set the port number in the module `start_link` options.
 
 Alternatively, on most linux distributions you can use `iptables` to forward broadcast UDP from port *67* to port *6767* and vice versa.  The following incantations will achieve this:
 
@@ -95,17 +95,15 @@ iptables -t nat -A POSTROUTING -p udp --sport 6767 -j SNAT --to <server ip addre
 ```
 _NB: If you're using a port besides *6767*, be sure to replace it with your chosen port._
 
-There may be situations where you would like to bind DHCP activity to a specific ethernet interface; this is settable from the module settings.
+### Interface Binding
+
+There may be situations where you would like to bind DHCP activity to a specific ethernet interface; this is settable in the module `start_link` options.
 
 In order to successfully bind to the interface on Linux machines, do the following as superuser:
 
 ```bash
 setcap cap_net_raw=ep /path/to/beam.smp
 ```
-
-## TODOs
-
-- [ ] publish to hex.pm
 
 ## Installation
 
@@ -115,12 +113,10 @@ by adding `ex_dhcp` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:ex_dhcp, "~> 0.1.0"}
+    {:ex_dhcp, "~> 0.1.1"}
   ]
 end
 ```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc) and published on [HexDocs](https://hexdocs.pm). Once published, the docs can be found at [https://hexdocs.pm/dhcp](https://hexdocs.pm/dhcp).
 
 <!-- References -->
 [1]: https://github.com/fhunleth/one_dhcpd

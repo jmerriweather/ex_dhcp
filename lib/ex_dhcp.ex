@@ -1,6 +1,6 @@
 defmodule ExDhcp do
   @moduledoc """
-  Creates an OTP-compliant DHCP server.
+  Creates an OTP-compliant DHCP packet server.
 
   An ExDhcp module binds to a UDP port, listens to DHCP messages sent
   to the port, and can resend DHCP messages
@@ -16,6 +16,7 @@ defmodule ExDhcp do
 
   It does *not*:
 
+  - accept configuration for handing out DHCP leases
   - keep the state of the DHCP leases
   - store DHCP lease information to durable storage
   - manage arp tables
