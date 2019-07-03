@@ -48,8 +48,14 @@ defmodule ExDhcp.Options do
   end
   @spec encode(Enumerable.t) :: iolist
   def encode(options) do
-    [Enum.filter(options, &is_binary/1) | <<@option_finish>>]
+    [Enum.map(options, &encode_fragment/1) | <<@option_finish>>]
   end
+
+  defp encode_fragment(binary) when is_binary(binary), do: binary
+  defp encode_fragment({type, binary}) when is_integer(type) and is_binary(binary) do
+    [<<type, :erlang.size(binary)>>, binary]
+  end
+  defp encode_fragment(_), do: ""
 
   #codec functions.
 

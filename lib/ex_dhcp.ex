@@ -374,12 +374,12 @@ defmodule ExDhcp do
   end
 
   @spec process_action(
-    {:respond, Packet.t, term} | {:norespond, term} |{:stop, term, term},
+    {:respond, Packet.t, term} | {:norespond, term} | {:stop, term, term},
     state) :: {:noreply, state} | {:stop, term, state}
   # common interface for handling respond, norespond, or stop
   # directives that are emitted by the handle_* callbacks.
-  defp process_action({:respond, response, new_state}, state) do
-    payload = Packet.encode(response)
+  defp process_action({:respond, response, new_state}, state = %{module: module}) do
+    payload = Packet.encode(response, module.options_parsers())
     :gen_udp.send(state.socket, state.broadcast_addr, state.client_port, payload)
     {:noreply, %{state | state: new_state}}
   end
