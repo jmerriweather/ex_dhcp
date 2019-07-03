@@ -1,6 +1,6 @@
 # ExDhcp
 
-**An instrumentable DHCP GenServer for Elixir**
+**An instrumentable DHCP Packet GenServer for Elixir**
 
 _Largely inspired by [one_dhcpd][1]_
 
@@ -16,7 +16,7 @@ If you would like to easily implement distributed DHCP with custom code hooks fo
 
 ## Usage Notes
 
-A minimal DhcpServer implements the following three methods:
+A minimal ExDhcp server implements the following three methods:
 - `handle_discover`
 - `handle_request`
 - `handle_decline`
@@ -94,6 +94,8 @@ iptables -t nat -I PREROUTING -p udp --src 0.0.0.0 --dport 67 -j DNAT --to 0.0.0
 iptables -t nat -A POSTROUTING -p udp --sport 6767 -j SNAT --to <server ip address>:67
 ```
 _NB: If you're using a port besides *6767*, be sure to replace it with your chosen port._
+
+### Interface Binding
 
 There may be situations where you would like to bind DHCP activity to a specific ethernet interface; this is settable from the module settings.
 
