@@ -4,7 +4,7 @@ defmodule ExDhcp.MixProject do
   def project do
     [
       app: :ex_dhcp,
-      version: "0.1.0",
+      version: "0.1.1",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       description: description(),
@@ -37,7 +37,7 @@ defmodule ExDhcp.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:elixir_uuid, "~> 1.2", only: [:test, :dev]},
+      {:elixir_uuid, "~> 1.2", only: [:test]},
       {:credo, "~> 1.1", only: [:test, :dev], runtime: false},
       {:dialyxir, "~> 0.5.1", only: :dev, runtime: false},
       {:licensir, "~> 0.4.2", only: :dev, runtime: false},

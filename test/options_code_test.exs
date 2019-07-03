@@ -13,7 +13,6 @@ defmodule DhcpTest.OptionsCodeTest do
   @message_type             53
   @parameter_request_list   55
   @client_ndi               94
-  @uuid_guid                97
   @forcerenew_nonce_capable 145
 
   describe "encoding to binaries works" do
@@ -56,13 +55,6 @@ defmodule DhcpTest.OptionsCodeTest do
     test "for client_ndi (client ndi type example)" do
       assert <<@client_ndi, 3, 1, 2, 3>> == Basic.encode({:client_ndi, {1, 2, 3}})
       assert <<@client_ndi, 3, 1, 2, 3>> == Basic.encode({@client_ndi, <<1, 2, 3>>})
-    end
-
-    test "for uuid-guuid (uuid type example)" do
-      test_uuid = UUID.uuid4()
-      test_uuid_bin = UUID.string_to_binary!(test_uuid)
-      assert <<@uuid_guid, 16>> <> test_uuid_bin == Basic.encode({:uuid_guid, test_uuid})
-      assert <<@uuid_guid, 16>> <> test_uuid_bin == Basic.encode({@uuid_guid, test_uuid_bin})
     end
 
     test "for forcerenew_nonce_capable (boolean type example)" do
