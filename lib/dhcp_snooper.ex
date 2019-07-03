@@ -7,6 +7,12 @@ if Mix.env == :dev do
 
     ## Usage
 
+    You'll probably want to set the following `iptables` settings:
+
+    ```bash
+    iptables -t nat -I PREROUTING -p udp --dport 67 -j DNAT --to :6767
+    ```
+
     ```elixir
     DhcpSnooper.start_link(:ok)
     ```
@@ -24,37 +30,37 @@ if Mix.env == :dev do
     @impl true
     def handle_discover(packet, _, _, :ok) do
       Logger.info(inspect packet)
-      {:noreply, :ok}
+      {:norespond, :ok}
     end
 
     @impl true
     def handle_request(packet, _, _, :ok) do
       Logger.info(inspect packet)
-      {:noreply, :ok}
+      {:norespond, :ok}
     end
 
     @impl true
     def handle_decline(packet, _, _, :ok) do
       Logger.info(inspect packet)
-      {:noreply, :ok}
+      {:norespond, :ok}
     end
 
     @impl true
     def handle_inform(packet, _, _, :ok) do
       Logger.info(inspect packet)
-      {:noreply, :ok}
+      {:norespond, :ok}
     end
 
     @impl true
     def handle_release(packet, _, _, :ok) do
       Logger.info(inspect packet)
-      {:noreply, :ok}
+      {:norespond, :ok}
     end
 
     @impl true
     def handle_packet(packet, _, _, :ok) do
       Logger.info(inspect packet)
-      {:noreply, :ok}
+      {:norespond, :ok}
     end
   end
 end
