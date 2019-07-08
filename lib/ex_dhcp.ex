@@ -2,14 +2,17 @@ defmodule ExDhcp do
   @moduledoc """
   Creates an OTP-compliant DHCP packet server.
 
-  An ExDhcp module binds to a UDP port, listens to DHCP messages sent
-  to the port, and can resend DHCP messages
-  (typically as a broadcast message) in response.
+  An ExDhcp module binds to a UDP port, listens to DHCP messages sent to the
+  port, and can resend DHCP messages (typically as a broadcast message) in
+  response.
 
   You may instrument whatever state you would like into the server; the
-  DHCP-specific contents will be encapsulated into the internals of the
-  server itself and all of the state exposed to the callbacks will be
-  your own state.
+  DHCP-specific contents will be encapsulated into the internals of the server
+  itself and all of the state exposed to the callbacks will be your own state.
+
+  Please consult the [readme](readme.html#deployment) for crucial deployment
+  information, as you won't be able immediately see or serve DHCP packets
+  without some configuration external to the Erlang/Elixir VM.
 
   **ExDhcp is not a fully-functional DHCP server** which conforms
   to the _[RFC 1531](https://tools.ietf.org/html/rfc1531)_ specs.
@@ -380,7 +383,20 @@ defmodule ExDhcp do
   # directives that are emitted by the handle_* callbacks.
   defp process_action({:respond, response, new_state}, state = %{module: module}) do
     payload = Packet.encode(response, module.options_parsers())
-    :gen_udp.send(state.socket, state.broadcast_addr, state.client_port, payload)
+
+    # UDP is not a protocol that expects 100% success; a retransmission is
+    # probably going to be OK.  But we should warn in the event of a failed
+    # transmission.
+    state.socket
+    |> :gen_udp.send(state.broadcast_addr, state.client_port, payload)
+    |> case do
+      :ok -> :ok
+      {:error, :eperm} ->
+        Logger.warn("Permission error obtained.  Did you disable conntrack?")
+      error ->
+        Logger.warn("Failed to send reply, error code #{error}")
+    end
+
     {:noreply, %{state | state: new_state}}
   end
   defp process_action({:norespond, new_state}, state) do
