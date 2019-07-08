@@ -382,6 +382,9 @@ defmodule ExDhcp do
     payload = Packet.encode(response, module.options_parsers())
     udp_res = :gen_udp.send(state.socket, state.broadcast_addr, state.client_port, payload)
 
+    # UDP is not a protocol that expects 100% success; a retransmission is
+    # probably going to be OK.  But we should warn in the event of a failed
+    # transmission
     unless :ok == udp_res do
       Logger.warn("failed to send reply, error code #{udp_res}")
     end
