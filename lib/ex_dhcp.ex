@@ -386,7 +386,7 @@ defmodule ExDhcp do
     # probably going to be OK.  But we should warn in the event of a failed
     # transmission
     unless :ok == udp_res do
-      Logger.warn("failed to send reply, error code #{udp_res}")
+      Logger.warn("failed to send reply, error code #{inspect udp_res}")
     end
 
     {:noreply, %{state | state: new_state}}
