@@ -380,7 +380,12 @@ defmodule ExDhcp do
   # directives that are emitted by the handle_* callbacks.
   defp process_action({:respond, response, new_state}, state = %{module: module}) do
     payload = Packet.encode(response, module.options_parsers())
-    :gen_udp.send(state.socket, state.broadcast_addr, state.client_port, payload)
+    udp_res = :gen_udp.send(state.socket, state.broadcast_addr, state.client_port, payload)
+
+    unless :ok == udp_res do
+      Logger.warn("failed to send reply, error code #{udp_res}")
+    end
+
     {:noreply, %{state | state: new_state}}
   end
   defp process_action({:norespond, new_state}, state) do
