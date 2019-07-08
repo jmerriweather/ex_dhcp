@@ -119,6 +119,10 @@ iptables -t raw -I OUTPUT -p udp --sport 6767 -j NOTRACK
 iptables -t raw -I PREROUTING -p udp --dport 6767 -j NOTRACK
 ```
 
+If your DHCP application is part of a service, You will probably want to make these 
+iptables settings persistent, but specific methods to do so are outside of the scope
+of these instructions.
+
 ### Interface Binding
 
 There may be situations where you would like to bind DHCP activity to a specific 

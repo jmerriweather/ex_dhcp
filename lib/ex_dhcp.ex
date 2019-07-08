@@ -2,14 +2,17 @@ defmodule ExDhcp do
   @moduledoc """
   Creates an OTP-compliant DHCP packet server.
 
-  An ExDhcp module binds to a UDP port, listens to DHCP messages sent
-  to the port, and can resend DHCP messages
-  (typically as a broadcast message) in response.
+  An ExDhcp module binds to a UDP port, listens to DHCP messages sent to the
+  port, and can resend DHCP messages (typically as a broadcast message) in
+  response.
 
   You may instrument whatever state you would like into the server; the
-  DHCP-specific contents will be encapsulated into the internals of the
-  server itself and all of the state exposed to the callbacks will be
-  your own state.
+  DHCP-specific contents will be encapsulated into the internals of the server
+  itself and all of the state exposed to the callbacks will be your own state.
+
+  Please consult the [readme](readme.html#deployment) for crucial deployment
+  information, as you won't be able immediately see or serve DHCP packets
+  without some configuration external to the Erlang/Elixir VM.
 
   **ExDhcp is not a fully-functional DHCP server** which conforms
   to the _[RFC 1531](https://tools.ietf.org/html/rfc1531)_ specs.
