@@ -8,11 +8,16 @@ _Largely inspired by [one_dhcpd][1]_
 
 ## General Description
 
-ExDhcp is an instrumentable DHCP GenServer, with an opinionated interface that takes after the `GenStage` design.  We couldn't use GPL licenced material in-house, so this project was derived from `one_dhcpcd`. 
+ExDhcp is an instrumentable DHCP GenServer, with an opinionated interface that 
+takes after the `GenStage` design.  We couldn't use GPL licenced material 
+in-house, so this project was derived from `one_dhcpcd`. 
 
-At the moment, unlike `one_dhcpcd`, it does not implement a full DHCP server, but you *could* use ExDhcp to implement that functionality. ExDhcp is ideal for using DHCP functionality for some other purpose, such as [PXE][2] booting.
+At the moment, unlike `one_dhcpcd`, it does not implement a full DHCP server, 
+but you *could* use ExDhcp to implement that functionality. ExDhcp is ideal for 
+using DHCP functionality for some other purpose, such as [PXE][2] booting.
 
-If you would like to easily implement distributed DHCP with custom code hooks for custom functionality, ExDhcp might be for you.
+If you would like to easily implement distributed DHCP with custom code hooks 
+for custom functionality, ExDhcp might be for you.
 
 ## Usage Notes
 
@@ -83,11 +88,17 @@ For more details, see the [documentation](https://hexdocs.pm/ex_dhcp).
 
 ### Deployment
 
-The [DHCP protocol][3] listens in on port *67*, which is below the privileged port limit *(1024)* for most, e.g. Linux distributions.
+The [DHCP protocol][3] listens in on port *67*, which is below the privileged 
+port limit *(1024)* for most, e.g. Linux distributions.
 
-ExDhcp doesn't presume that it will be running as root or have access to that port, and by default listens in to port *6767*.  If you expect to have access to privileged ports, you can set the port number in the module `start_link` options.
+ExDhcp doesn't presume that it will be running as root or have access to that 
+port, and by default listens in to port *6767*.  If you expect to have access 
+to privileged ports, you can set the port number in the module `start_link` 
+options.
 
-Alternatively, on most linux distributions you can use `iptables` to forward broadcast UDP from port *67* to port *6767* and vice versa.  The following incantations will achieve this:
+Alternatively, on most linux distributions you can use `iptables` to forward 
+broadcast UDP from port *67* to port *6767* and vice versa.  The following 
+incantations will achieve this:
 
 ```bash
 iptables -t nat -I PREROUTING -p udp --src 0.0.0.0 --dport 67 -j DNAT --to 0.0.0.0:6767
@@ -95,11 +106,26 @@ iptables -t nat -A POSTROUTING -p udp --sport 6767 -j SNAT --to <server ip addre
 ```
 _NB: If you're using a port besides *6767*, be sure to replace it with your chosen port._
 
+On some Linux Distributions (we see this on **Ubuntu 18.04**), the `conntrack`
+netfilter will be enabled by default, which will cause the server to throttle 
+outgoing broadcast UDP packets, and this could adversely affect the success of 
+your DHCP functionality.  If this is the case, you will see most of your UDP send 
+events drop with an `{:error, :eperm}` error.  In this case, The DHCP module traps 
+these and warns you of a permission error.  To fix this situation, issue the following
+incantations as superuser.
+
+```bash
+iptables -t raw -I OUTPUT -p udp --sport 6767 -j NOTRACK
+iptables -t raw -I PREROUTING -p udp --dport 6767 -j NOTRACK
+```
+
 ### Interface Binding
 
-There may be situations where you would like to bind DHCP activity to a specific ethernet interface; this is settable in the module `start_link` options.
+There may be situations where you would like to bind DHCP activity to a specific 
+ethernet interface; this is settable in the module `start_link` options.
 
-In order to successfully bind to the interface on Linux machines, do the following as superuser:
+In order to successfully bind to the interface on Linux machines, do the 
+following as superuser:
 
 ```bash
 setcap cap_net_raw=ep /path/to/beam.smp
