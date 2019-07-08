@@ -380,13 +380,18 @@ defmodule ExDhcp do
   # directives that are emitted by the handle_* callbacks.
   defp process_action({:respond, response, new_state}, state = %{module: module}) do
     payload = Packet.encode(response, module.options_parsers())
-    udp_res = :gen_udp.send(state.socket, state.broadcast_addr, state.client_port, payload)
 
     # UDP is not a protocol that expects 100% success; a retransmission is
     # probably going to be OK.  But we should warn in the event of a failed
-    # transmission
-    unless :ok == udp_res do
-      Logger.warn("failed to send reply, error code #{inspect udp_res}")
+    # transmission.
+    state.socket
+    |> :gen_udp.send(state.broadcast_addr, state.client_port, payload)
+    |> case do
+      :ok -> :ok
+      {:error, :eperm} ->
+        Logger.warn("Permission error obtained.  Did you disable conntrack?")
+      error ->
+        Logger.warn("Failed to send reply, error code #{error}")
     end
 
     {:noreply, %{state | state: new_state}}
