@@ -4,7 +4,7 @@
 
 _Largely inspired by [one_dhcpd][1]_
 
-<img src="https://api.travis-ci.com/RstorLabs/ex_dhcp.svg?branch=master"/>
+<a href="https://travis-ci.com/RstorLabs/ex_dhcp"><img src="https://api.travis-ci.com/RstorLabs/ex_dhcp.svg?branch=master"/></a>
 
 ## General Description
 
@@ -101,7 +101,7 @@ broadcast UDP from port *67* to port *6767* and vice versa.  The following
 incantations will achieve this:
 
 ```bash
-iptables -t nat -I PREROUTING -p udp --src 0.0.0.0 --dport 67 -j DNAT --to 0.0.0.0:6767
+iptables -t nat -A PREROUTING -p udp --src 0.0.0.0 --dport 67 -j DNAT --to 0.0.0.0:6767
 iptables -t nat -A POSTROUTING -p udp --sport 6767 -j SNAT --to <server ip address>:67
 ```
 _NB: If you're using a port besides *6767*, be sure to replace it with your chosen port._
@@ -109,19 +109,12 @@ _NB: If you're using a port besides *6767*, be sure to replace it with your chos
 On some Linux Distributions (we see this on **Ubuntu 18.04**), the `conntrack`
 netfilter will be enabled by default, which will cause the server to throttle 
 outgoing broadcast UDP packets, and this could adversely affect the success of 
-your DHCP functionality.  If this is the case, you will see most of your UDP send 
-events drop with an `{:error, :eperm}` error.  In this case, The DHCP module traps 
-these and warns you of a permission error.  To fix this situation, issue the following
-incantations as superuser.
+your DHCP functionality.  If this is the case, you will see most of your UDP 
+send events drop with an `{:error, :eperm}` error.  The DHCP module traps these 
+and will remind you to check your conntrack settings.  We were unable to 
+resolve this as desired except by downgrading to **Ubuntu 16.04** or switching
+to **Alpine Linux**.
 
-```bash
-iptables -t raw -I OUTPUT -p udp --sport 6767 -j NOTRACK
-iptables -t raw -I PREROUTING -p udp --dport 6767 -j NOTRACK
-```
-
-If your DHCP application is part of a service, You will probably want to make these 
-iptables settings persistent, but specific methods to do so are outside of the scope
-of these instructions.
 
 ### Interface Binding
 
@@ -134,6 +127,14 @@ following as superuser:
 ```bash
 setcap cap_net_raw=ep /path/to/beam.smp
 ```
+
+### Fun Tools
+
+When implementing a DHCP service, you may want to spy on the requests and responses
+in successful DHCP exchanges.  For that purpose, we provide a *DHCP snooper*.  To
+run this snooper, forward both DHCP ports (67 and 68) to 6767 and run `mix snoop`.
+This will log `%Packet{}` structs to the console that you may later use to generate
+snapshot tests.
 
 ## Installation
 
