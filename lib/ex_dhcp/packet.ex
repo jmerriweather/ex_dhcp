@@ -97,7 +97,7 @@ defmodule ExDhcp.Packet do
     :inet.ancillary_data,
     binary}
 
-  @bootp_octets 192 * 8
+  @bootp_octets 192
 
   @doc """
   Converts a udp packet or a binary payload from a UDP packet and converts
@@ -115,7 +115,7 @@ defmodule ExDhcp.Packet do
         <<op, htype, @hlen_macaddr, hops, xid::size(32), secs::size(16),
           flags::size(16), ciaddr::binary-size(4), yiaddr::binary-size(4),
           siaddr::binary-size(4), giaddr::binary-size(4), chaddr::binary-size(6),
-          0::80, 0::@bootp_octets, @magic_cookie::binary>> <> options,
+          0::80, _::binary-size(@bootp_octets), @magic_cookie::binary>> <> options,
           option_parsers) do
 
     %__MODULE__{
