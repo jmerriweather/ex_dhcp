@@ -4,7 +4,7 @@
 
 _Largely inspired by [one_dhcpd][1]_
 
-<img src="https://api.travis-ci.com/RstorLabs/ex_dhcp.svg?branch=master"/>
+<a href="https://travis-ci.com/RstorLabs/ex_dhcp"><img src="https://api.travis-ci.com/RstorLabs/ex_dhcp.svg?branch=master"/></a>
 
 ## General Description
 
