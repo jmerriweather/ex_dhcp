@@ -75,6 +75,22 @@ defmodule Mix.Tasks.Snoop do
       Logger.info(inspect packet)
       {:norespond, :ok}
     end
+
+    @impl true
+    def handle_info({:udp, _, _, _, binary}, :ok) do
+      unrolled_binary = binary
+      |> :erlang.binary_to_list
+      |> Enum.chunk_every(16)
+      |> Enum.map(&Enum.join(&1, ", "))
+      |> Enum.join("\n")
+
+      Logger.warn("untrapped udp: \n <<#{unrolled_binary}>> ")
+      {:norespond, :ok}
+    end
+    def handle_info(info, :ok) do
+      Logger.warn(inspect info)
+      {:norespond, :ok}
+    end
   end
 
   @doc false
