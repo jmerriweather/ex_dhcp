@@ -148,7 +148,7 @@ defmodule ExDhcpTest.RegressionTest do
   ## A PXE booting payload from the arch linux dnsmasq server was discovered to crash
   ## the PXE snooper on account of a poorly coded parser.
 
-  @danger_binary <<1, 1, 6, 0, 94, 145, 92, 141, 5, 125, 0::18*8, 244, 77, 48,
+  @danger_binary <<1, 1, 6, 0, 94, 145, 92, 141, 5, 125, 0::18 * 8, 244, 77, 48,
   108, 150, 199, 0::202 * 8, 99, 130, 83, 99, 53, 1, 1, 116, 1, 1, 57, 2, 5, 192,
   60, 58, 100, 104, 99, 112, "cd-7.2.1:Linux-5.0.13-arch1-1-AR", 67, 72, 58, 120,
   56, 54, 95, 54, 52, 58, 71, 101, 110, 117, 105, 110, 101, 73, 110, 116, 101, 108,
