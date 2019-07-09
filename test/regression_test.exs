@@ -154,7 +154,6 @@ defmodule ExDhcpTest.RegressionTest do
   56, 54, 95, 54, 52, 58, 71, 101, 110, 117, 105, 110, 101, 73, 110, 116, 101, 108,
   145, 1, 1, 55, 7, 1, 33, 3, 28, 51, 58, 59, 255>>
 
-  @tag :one
   test "dangerous binary" do
     assert %Packet{} = Packet.decode(@danger_binary)
   end
