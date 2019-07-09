@@ -4,7 +4,7 @@ defmodule ExDhcp.MixProject do
   def project do
     [
       app: :ex_dhcp,
-      version: "0.1.1",
+      version: "0.1.2",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       description: description(),
@@ -13,7 +13,7 @@ defmodule ExDhcp.MixProject do
       preferred_cli_env: [coveralls: :test, "coveralls.detail": :test, "coveralls.post": :test, "coveralls.html": :test],
       source_url: "https://github.com/RstorLabs/ex_dhcp",
       package: package(),
-      docs: [main: "ExDhcp"]
+      docs: [main: "ExDhcp", extras: ["README.md"]]
     ]
   end
 
