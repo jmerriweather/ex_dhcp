@@ -115,7 +115,7 @@ defmodule ExDhcp.Packet do
         <<op, htype, @hlen_macaddr, hops, xid::size(32), secs::size(16),
           flags::size(16), ciaddr::binary-size(4), yiaddr::binary-size(4),
           siaddr::binary-size(4), giaddr::binary-size(4), chaddr::binary-size(6),
-          0::80, 0::@bootp_octets, @magic_cookie>> <> options,
+          0::80, 0::@bootp_octets, @magic_cookie::binary>> <> options,
           option_parsers) do
 
     %__MODULE__{
