@@ -133,6 +133,28 @@ defmodule ExDhcp.Packet do
       options: Options.decode(options, option_parsers)
     }
   end
+  def decode(
+    <<op, htype, @hlen_macaddr, hops, xid::size(32), secs::size(16),
+      flags::size(16), ciaddr::binary-size(4), yiaddr::binary-size(4),
+      siaddr::binary-size(4), giaddr::binary-size(4), chaddr::binary-size(6),
+      0::80, _::binary-size(34), @magic_cookie::binary>> <> options,
+      option_parsers) do
+
+    %__MODULE__{
+      op: op,
+      htype: htype,
+      hops: hops,
+      xid: xid,
+      secs: secs,
+      flags: flags,
+      ciaddr: Utils.bin2ip(ciaddr),
+      yiaddr: Utils.bin2ip(yiaddr),
+      siaddr: Utils.bin2ip(siaddr),
+      giaddr: Utils.bin2ip(giaddr),
+      chaddr: Utils.bin2mac(chaddr),
+      options: Options.decode(options, option_parsers)
+    }
+  end
 
   @doc """
   Converts from a `ExDhcp.Packet` struct into an [`iolist()`](https://hexdocs.pm/elixir/typespecs.html#built-in-types).
