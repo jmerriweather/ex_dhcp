@@ -128,7 +128,7 @@ defmodule ExDhcp.Packet do
       xid: xid,
       secs: secs,
       flags: flags,
-      extra: extra,
+      extra: extra_content,
       ciaddr: Utils.bin2ip(ciaddr),
       yiaddr: Utils.bin2ip(yiaddr),
       siaddr: Utils.bin2ip(siaddr),

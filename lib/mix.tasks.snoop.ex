@@ -42,37 +42,37 @@ defmodule Mix.Tasks.Snoop do
 
     @impl true
     def handle_discover(packet, _, _, :ok) do
-      Logger.info(inspect packet)
+      Logger.info(display(packet))
       {:norespond, :ok}
     end
 
     @impl true
     def handle_request(packet, _, _, :ok) do
-      Logger.info(inspect packet)
+      Logger.info(display(packet))
       {:norespond, :ok}
     end
 
     @impl true
     def handle_decline(packet, _, _, :ok) do
-      Logger.info(inspect packet)
+      Logger.info(display(packet))
       {:norespond, :ok}
     end
 
     @impl true
     def handle_inform(packet, _, _, :ok) do
-      Logger.info(inspect packet)
+      Logger.info(display(packet))
       {:norespond, :ok}
     end
 
      @impl true
      def handle_release(packet, _, _, :ok) do
-       Logger.info(inspect packet)
+       Logger.info(display(packet))
        {:norespond, :ok}
      end
 
     @impl true
     def handle_packet(packet, _, _, :ok) do
-      Logger.info(inspect packet)
+      Logger.info(display(packet))
       {:norespond, :ok}
     end
 
@@ -90,6 +90,17 @@ defmodule Mix.Tasks.Snoop do
     def handle_info(info, :ok) do
       Logger.warn(inspect info)
       {:noreply, :ok}
+    end
+
+    def display(%Packet{extra: <<0::1888>>}), do: inspect(packet)
+    def display(%Packet{extra: binary}) do
+      unrolled_binary = binary
+      |> :erlang.binary_to_list
+      |> Enum.chunk_every(16)
+      |> Enum.map(&Enum.join(&1, ", "))
+      |> Enum.join("\n")
+
+      inspect(packet) <> "extra content: \n <<#{unrolled_binary}>> "
     end
   end
 
