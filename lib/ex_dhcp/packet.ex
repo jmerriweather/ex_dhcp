@@ -108,14 +108,15 @@ defmodule ExDhcp.Packet do
   """
   @spec decode(udp_packet | binary, [module]) :: t
   def decode(udp_packet, option_parsers \\ [Basic])
-  def decode({:udp, _, _, _, binary = <<_::1888>> <> @magic_cookie <> _}, option_parsers) do
+  def decode({:udp, _, _, _, binary}, option_parsers) do
     decode(binary, option_parsers)
   end
   def decode(
         <<op, htype, @hlen_macaddr, hops, xid::size(32), secs::size(16),
           flags::size(16), ciaddr::binary-size(4), yiaddr::binary-size(4),
           siaddr::binary-size(4), giaddr::binary-size(4), chaddr::binary-size(6),
-          0::80, _::binary-size(@bootp_octets), @magic_cookie::binary>> <> options,
+          _::binary-size(10), _::binary-size(@bootp_octets),
+          @magic_cookie::binary, options::binary>>,
           option_parsers) do
 
     %__MODULE__{
@@ -137,7 +138,7 @@ defmodule ExDhcp.Packet do
     <<op, htype, @hlen_macaddr, hops, xid::size(32), secs::size(16),
       flags::size(16), ciaddr::binary-size(4), yiaddr::binary-size(4),
       siaddr::binary-size(4), giaddr::binary-size(4), chaddr::binary-size(6),
-      0::80, _::binary-size(24), @magic_cookie::binary>> <> options,
+      _::binary-size(34), @magic_cookie::binary, options::binary>>,
       option_parsers) do
 
     %__MODULE__{
