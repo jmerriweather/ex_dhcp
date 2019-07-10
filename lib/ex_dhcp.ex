@@ -278,8 +278,8 @@ defmodule ExDhcp do
     p
     |> :erlang.binary_to_list()
     |> Enum.chunk_every(32)
-    |> Enum.each(&:erlang.list_to_binary/1)
-    |> Enum.each(&inspect/1)
+    |> Enum.map(&:erlang.list_to_binary/1)
+    |> Enum.map(&inspect/1)
     |> Enum.join("\n")
     |> Logger.info
 
