@@ -272,10 +272,6 @@ defmodule ExDhcp do
                          @magic_cookie, _::binary>>}, state) do
     handle_dhcp(msg, state)
   end
-  def handle_info(msg = {:udp, _, _, _, <<_::binary-size(68),
-                         @magic_cookie, _::binary>>}, state) do
-    handle_dhcp(msg, state)
-  end
   # handle other types of information that get sent to server.
   def handle_info(msg, state = %{module: module}) do
     if function_exported?(module, :handle_info, 2) do
