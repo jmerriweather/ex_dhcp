@@ -56,6 +56,7 @@ defmodule ExDhcp.Packet do
             xid: 0,
             secs: 0,
             flags: 0,
+            extra: "",
             ciaddr: {0, 0, 0, 0},
             yiaddr: {0, 0, 0, 0},
             siaddr: {0, 0, 0, 0},
@@ -76,6 +77,7 @@ defmodule ExDhcp.Packet do
     xid:     non_neg_integer,
     secs:    non_neg_integer,
     flags:   non_neg_integer,
+    extra:   binary,
     ciaddr:  Utils.ip4,
     yiaddr:  Utils.ip4,
     siaddr:  Utils.ip4,
@@ -115,7 +117,7 @@ defmodule ExDhcp.Packet do
         <<op, htype, @hlen_macaddr, hops, xid::size(32), secs::size(16),
           flags::size(16), ciaddr::binary-size(4), yiaddr::binary-size(4),
           siaddr::binary-size(4), giaddr::binary-size(4), chaddr::binary-size(6),
-          _::binary-size(10), _::binary-size(@bootp_octets),
+          _::binary-size(10), extra_content::binary-size(@bootp_octets),
           @magic_cookie::binary, options::binary>>,
           option_parsers) do
 
@@ -126,6 +128,7 @@ defmodule ExDhcp.Packet do
       xid: xid,
       secs: secs,
       flags: flags,
+      extra: extra,
       ciaddr: Utils.bin2ip(ciaddr),
       yiaddr: Utils.bin2ip(yiaddr),
       siaddr: Utils.bin2ip(siaddr),
