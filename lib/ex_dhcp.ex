@@ -268,12 +268,13 @@ defmodule ExDhcp do
   @dhcp_inform 8
 
   @impl true
-  def handle_info(msg = {:udp, _, _, _, <<_::1888>> <> @magic_cookie <> _},
-                  state = %{module: module}) do
-    msg
-    |> Packet.decode(module.options_parsers())
-    |> packet_switch(state)
-    |> process_action(state)
+  def handle_info(msg = {:udp, _, _, _, <<_::binary-size(236),
+                         @magic_cookie, _::binary>>}, state) do
+    handle_dhcp(msg, state)
+  end
+  def handle_info(msg = {:udp, _, _, _, <<_::binary-size(68),
+                         @magic_cookie, _::binary>>}, state) do
+    handle_dhcp(msg, state)
   end
   # handle other types of information that get sent to server.
   def handle_info(msg, state = %{module: module}) do
@@ -287,6 +288,13 @@ defmodule ExDhcp do
       Logger.warn("undefined handle_info in #{module}")
       {:noreply, state}
     end
+  end
+
+  defp handle_dhcp(msg, state = %{module: module}) do
+    msg
+    |> Packet.decode(module.options_parsers())
+    |> packet_switch(state)
+    |> process_action(state)
   end
 
   @dhcp_request_op 1
