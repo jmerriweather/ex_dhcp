@@ -92,8 +92,8 @@ defmodule Mix.Tasks.Snoop do
       {:noreply, :ok}
     end
 
-    def display(%Packet{extra: <<0::1888>>}), do: inspect(packet)
-    def display(%Packet{extra: binary}) do
+    def display(packet = %{extra: <<0::1888>>}), do: inspect(packet)
+    def display(packet = %{extra: binary}) do
       unrolled_binary = binary
       |> :erlang.binary_to_list
       |> Enum.chunk_every(16)
