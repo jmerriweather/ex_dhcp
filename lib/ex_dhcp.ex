@@ -271,6 +271,10 @@ defmodule ExDhcp do
   def handle_info(msg = {:udp, _, _, _, p = <<_::binary-size(236),
                          @magic_cookie, _::binary>>}, state) do
 
+    msg
+    |> inspect
+    |> Logger.info
+
     p
     |> :erlang.binary_to_list()
     |> Enum.chunk_every(32)
