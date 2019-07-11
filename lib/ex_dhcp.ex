@@ -178,6 +178,9 @@ defmodule ExDhcp do
     you may want to change this to `67` if you do not want to use iptables to
     redirect DHCP transactions to a nonprivileged Elixir server.
 
+  - `:ip` the IP that you'd like the ExDhcp port to be bound to.  (nb: This
+    feature is currently untested)
+
   - `:bind_to_device` (must be a binary string), the device you would like to
     bind to for DHCP listening.
 
