@@ -178,6 +178,9 @@ defmodule ExDhcp do
     you may want to change this to `67` if you do not want to use iptables to
     redirect DHCP transactions to a nonprivileged Elixir server.
 
+  - `:ip` the IP that you'd like the ExDhcp port to be bound to.  (nb: This
+    feature is currently untested)
+
   - `:bind_to_device` (must be a binary string), the device you would like to
     bind to for DHCP listening.
 
@@ -226,7 +229,7 @@ defmodule ExDhcp do
   def init({module, initializer, opts}) do
     # use gen_udp to begin forwarding messages.
     port = opts[:port] || @default_port
-    bind_opt = Keyword.take(opts, [:bind_to_device])
+    bind_opt = Keyword.take(opts, [:bind_to_device, :ip])
     client_port = opts[:client_port] || @default_client_port
     broadcast_addr = opts[:broadcast_addr] || @default_broadcast_addr
 
@@ -268,12 +271,9 @@ defmodule ExDhcp do
   @dhcp_inform 8
 
   @impl true
-  def handle_info(msg = {:udp, _, _, _, <<_::1888>> <> @magic_cookie <> _},
-                  state = %{module: module}) do
-    msg
-    |> Packet.decode(module.options_parsers())
-    |> packet_switch(state)
-    |> process_action(state)
+  def handle_info(msg = {:udp, _, _, _,
+                  <<_::binary-size(236), @magic_cookie::binary, _::binary>>}, state) do
+    handle_dhcp(msg, state)
   end
   # handle other types of information that get sent to server.
   def handle_info(msg, state = %{module: module}) do
@@ -287,6 +287,13 @@ defmodule ExDhcp do
       Logger.warn("undefined handle_info in #{module}")
       {:noreply, state}
     end
+  end
+
+  defp handle_dhcp(msg, state = %{module: module}) do
+    msg
+    |> Packet.decode(module.options_parsers())
+    |> packet_switch(state)
+    |> process_action(state)
   end
 
   @dhcp_request_op 1
@@ -392,9 +399,9 @@ defmodule ExDhcp do
     |> case do
       :ok -> :ok
       {:error, :eperm} ->
-        Logger.warn("Permission error obtained.  Did you disable conntrack?")
+        Logger.error("Permission error obtained.  Did you disable conntrack?")
       error ->
-        Logger.warn("Failed to send reply, error code #{error}")
+        Logger.error("Failed to send reply, error code #{inspect error}")
     end
 
     {:noreply, %{state | state: new_state}}

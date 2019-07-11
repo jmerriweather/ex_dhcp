@@ -97,7 +97,7 @@ defmodule ExDhcp.Packet do
     :inet.ancillary_data,
     binary}
 
-  @bootp_octets 192 * 8
+  @bootp_octets 192
 
   @doc """
   Converts a udp packet or a binary payload from a UDP packet and converts
@@ -108,14 +108,15 @@ defmodule ExDhcp.Packet do
   """
   @spec decode(udp_packet | binary, [module]) :: t
   def decode(udp_packet, option_parsers \\ [Basic])
-  def decode({:udp, _, _, _, binary = <<_::1888>> <> @magic_cookie <> _}, option_parsers) do
+  def decode({:udp, _, _, _, binary}, option_parsers) do
     decode(binary, option_parsers)
   end
   def decode(
         <<op, htype, @hlen_macaddr, hops, xid::size(32), secs::size(16),
           flags::size(16), ciaddr::binary-size(4), yiaddr::binary-size(4),
           siaddr::binary-size(4), giaddr::binary-size(4), chaddr::binary-size(6),
-          0::80, 0::@bootp_octets, @magic_cookie::binary>> <> options,
+          _::binary-size(10), _::binary-size(@bootp_octets),
+          @magic_cookie::binary, options::binary>>,
           option_parsers) do
 
     %__MODULE__{
@@ -153,7 +154,7 @@ defmodule ExDhcp.Packet do
 
     [message.op, message.htype, message.hlen, message.hops, <<message.xid::32>>,
      <<message.secs::16>>, <<message.flags::16>>, ciaddr, yiaddr, siaddr, giaddr,
-     chaddr, <<0::80>>, <<0::@bootp_octets>>, @magic_cookie | options]
+     chaddr, <<0::80>>, <<0::@bootp_octets * 8>>, @magic_cookie | options]
   end
 
   @builtin_options [:op, :htype, :hlen, :hops, :xid, :secs, :flags,
