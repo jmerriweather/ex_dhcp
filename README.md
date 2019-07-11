@@ -138,13 +138,14 @@ snapshot tests.
 
 ## Installation
 
-If available in [Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `ex_dhcp` to your list of dependencies in `mix.exs`:
+Available from [Hex](https://hex.pm/packages/ex_dhcp). 
+Documentation on [Hexdocs](https://hexdocs.pm/ex_dhcp/ExDhcp.html).
+The package can be installed by adding `ex_dhcp` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:ex_dhcp, "~> 0.1.1"}
+    {:ex_dhcp, "~> 0.1.2"}
   ]
 end
 ```
