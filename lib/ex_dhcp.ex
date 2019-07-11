@@ -226,7 +226,7 @@ defmodule ExDhcp do
   def init({module, initializer, opts}) do
     # use gen_udp to begin forwarding messages.
     port = opts[:port] || @default_port
-    bind_opt = Keyword.take(opts, [:bind_to_device])
+    bind_opt = Keyword.take(opts, [:bind_to_device, :ip])
     client_port = opts[:client_port] || @default_client_port
     broadcast_addr = opts[:broadcast_addr] || @default_broadcast_addr
 
@@ -271,17 +271,17 @@ defmodule ExDhcp do
   def handle_info(msg = {:udp, _, _, _, p = <<_::binary-size(236),
                          @magic_cookie, _::binary>>}, state) do
 
-    msg
-    |> inspect
-    |> Logger.info
-
-    p
-    |> :erlang.binary_to_list()
-    |> Enum.chunk_every(32)
-    |> Enum.map(&:erlang.list_to_binary/1)
-    |> Enum.map(&inspect/1)
-    |> Enum.join("\n")
-    |> Logger.info
+    #msg
+    #|> inspect
+    #|> Logger.info
+#
+    #p
+    #|> :erlang.binary_to_list()
+    #|> Enum.chunk_every(32)
+    #|> Enum.map(&:erlang.list_to_binary/1)
+    #|> Enum.map(&inspect/1)
+    #|> Enum.join("\n")
+    #|> Logger.info
 
     handle_dhcp(msg, state)
   end
@@ -409,9 +409,9 @@ defmodule ExDhcp do
     |> case do
       :ok -> :ok
       {:error, :eperm} ->
-        Logger.warn("Permission error obtained.  Did you disable conntrack?")
+        Logger.error("Permission error obtained.  Did you disable conntrack?")
       error ->
-        Logger.warn("Failed to send reply, error code #{error}")
+        Logger.error("Failed to send reply, error code #{inspect error}")
     end
 
     {:noreply, %{state | state: new_state}}
