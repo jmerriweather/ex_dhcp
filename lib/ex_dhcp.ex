@@ -271,21 +271,8 @@ defmodule ExDhcp do
   @dhcp_inform 8
 
   @impl true
-  def handle_info(msg = {:udp, _, _, _, p = <<_::binary-size(236),
-                         @magic_cookie, _::binary>>}, state) do
-
-    #msg
-    #|> inspect
-    #|> Logger.info
-#
-    #p
-    #|> :erlang.binary_to_list()
-    #|> Enum.chunk_every(32)
-    #|> Enum.map(&:erlang.list_to_binary/1)
-    #|> Enum.map(&inspect/1)
-    #|> Enum.join("\n")
-    #|> Logger.info
-
+  def handle_info(msg = {:udp, _, _, _,
+                  <<_::binary-size(236), @magic_cookie::binary, _::binary>>}, state) do
     handle_dhcp(msg, state)
   end
   # handle other types of information that get sent to server.
