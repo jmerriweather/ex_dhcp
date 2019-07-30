@@ -3,6 +3,8 @@ defmodule ExDhcpTest.RegressionTest do
 
   alias ExDhcp.Packet
 
+  @moduletag :regression
+
   ## regression test discovered 2 Jul 2019.
   ## Intel-NUC PXE booter emitted the following DHCP packet:
 
