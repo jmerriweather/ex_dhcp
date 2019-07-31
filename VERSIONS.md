@@ -20,11 +20,8 @@
 - warn about stray UDP packets coming your way
 - more regression testing/bugfixes
 
-### 0.1.3 (proposed)
+### 0.1.3
 
-- clean up tests to use `:gen_udp.open(0, ...)` semantics
-- instrument an `info` method.
+- tests now have no hardcoded udp ports.
+- `init/2` now implemented which lets you use the server socket
 
-### 0.2 (proposed)
-
-- create `init/4` to allow more information to be put into state
