@@ -154,7 +154,7 @@ defmodule ExDhcp do
         ExDhcp.start_link(__MODULE__, initial_state, options)
       end
 
-      defoverridable child_spec: 1, start_link: 1, start_link: 2
+      defoverridable child_spec: 1, start_link: 2
 
       @doc false
       @spec options_parsers() :: [module]
