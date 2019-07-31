@@ -3,6 +3,8 @@ defmodule ExDhcpTest.RegressionTest do
 
   alias ExDhcp.Packet
 
+  @moduletag :regression
+
   ## regression test discovered 2 Jul 2019.
   ## Intel-NUC PXE booter emitted the following DHCP packet:
 
@@ -58,17 +60,17 @@ defmodule ExDhcpTest.RegressionTest do
     @testhost {192, 168, 0, 1}
 
     @impl true
-    def init(v), do: {:ok, v}
+    def init(_, socket), do: {:ok, socket}
 
     @impl true
-    def handle_discover(packet, _xid, _mac, state) do
+    def handle_discover(packet, _xid, _mac, socket) do
 
       response = Packet.respond(packet, :offer,
          server: @testhost,     # basic parameter
          tftp_server: @testhost # pxe parameter
       )
 
-      {:respond, response, state}
+      {:respond, response, socket}
     end
 
     @impl true
@@ -76,6 +78,11 @@ defmodule ExDhcpTest.RegressionTest do
 
     @impl true
     def handle_decline(_, _, _, _), do: {:norespond, :pumpkin}
+
+    @impl true
+    def handle_call(:socket, _from, socket), do: {:reply, socket, socket}
+
+    def socket(srv), do: GenServer.call(srv, :socket)
   end
 
   #
@@ -91,10 +98,14 @@ defmodule ExDhcpTest.RegressionTest do
   }
 
   test "multiple module encoding" do
-    DualParser.start_link(self(), port: 6801, client_port: 6802, broadcast_addr: @localhost)
-    {:ok, sock} = :gen_udp.open(6802, [:binary, active: true])
+    {:ok, sock} = :gen_udp.open(0, [:binary, active: true])
+    {:ok, client_port} = :inet.port(sock)
+
+    {:ok, srv} = DualParser.start_link(self(), port: 0, client_port: client_port, broadcast_addr: @localhost)
+    {:ok, srv_port} = srv |> DualParser.socket |> :inet.port
+
     disc_pack = Packet.encode(@dhcp_discover)
-    :gen_udp.send(sock, {127, 0, 0, 1}, 6801, disc_pack)
+    :gen_udp.send(sock, @localhost, srv_port, disc_pack)
     assert_receive {:udp, _, _, _, binary}
     assert %Packet{options: %{server: @testhost, tftp_server: @testhost}} =
       Packet.decode(binary, [ExDhcp.Options.Basic, ExDhcp.Options.Pxe])
@@ -106,26 +117,29 @@ defmodule ExDhcpTest.RegressionTest do
     @localhost {127, 0, 0, 1}
 
     @impl true
-    def init(v), do: {:ok, v}
+    def init(_, socket), do: {:ok, socket}
 
     @impl true
-    def handle_discover(packet, _xid, _mac, state) do
+    def handle_discover(packet, _xid, _mac, socket) do
 
       response = Packet.respond(packet, :offer,
          server: @localhost,     # basic parameter
          client_system: nil     # pxe parameter
       )
 
-      {:respond, response, state}
+      {:respond, response, socket}
     end
 
     @impl true
     def handle_request(_, _, _, _), do: {:norespond, :pumpkin}
     @impl true
     def handle_decline(_, _, _, _), do: {:norespond, :pumpkin}
-  end
 
-  @localhost {127, 0, 0, 1}
+    @impl true
+    def handle_call(:socket, _from, socket), do: {:reply, socket, socket}
+
+    def socket(srv), do: GenServer.call(srv, :socket)
+  end
 
   @dhcp_discover %Packet{
     op: 1, xid: 0x3903_F326, chaddr: {0x00, 0x05, 0x3C, 0x04, 0x8D, 0x59},
@@ -134,10 +148,14 @@ defmodule ExDhcpTest.RegressionTest do
   }
 
   test "nil module encoding" do
-    NilParser.start_link(self(), port: 6803, client_port: 6804, broadcast_addr: @localhost)
-    {:ok, sock} = :gen_udp.open(6804, [:binary, active: true])
+    {:ok, sock} = :gen_udp.open(0, [:binary, active: true])
+    {:ok, client_port} = :inet.port(sock)
+
+    {:ok, srv} = NilParser.start_link(self(), port: 0, client_port: client_port, broadcast_addr: @localhost)
+    {:ok, srv_port} = srv |> NilParser.socket |> :inet.port
+
     disc_pack = Packet.encode(@dhcp_discover)
-    :gen_udp.send(sock, {127, 0, 0, 1}, 6803, disc_pack)
+    :gen_udp.send(sock, @localhost, srv_port, disc_pack)
     assert_receive {:udp, _, _, _, binary}
     srv = Packet.decode(binary).options
     assert @localhost == srv.server

@@ -10,7 +10,7 @@ defmodule DhcpTest.Behaviour.HandlePacketTest do
   defmodule PckSrvNoRespond do
     alias DhcpTest.Behaviour.CommonDhcp
     require CommonDhcp
-    CommonDhcp.with_port(6501)
+    CommonDhcp.setup
 
     def handle_packet(pack, xid, chaddr, test_pid) do
       send(test_pid, {:packet, pack, xid, chaddr})
@@ -21,7 +21,7 @@ defmodule DhcpTest.Behaviour.HandlePacketTest do
   defmodule NoPckSrvNoRespond do
     alias DhcpTest.Behaviour.CommonDhcp
     require CommonDhcp
-    CommonDhcp.with_port(6503)
+    CommonDhcp.setup
   end
 
   # offer packet request example taken from wikipedia:
@@ -38,10 +38,8 @@ defmodule DhcpTest.Behaviour.HandlePacketTest do
 
   describe "dhcp offer requests" do
     test "are handled when handle_packet is implemented" do
-      PckSrvNoRespond.start_link()
-      {:ok, sock} = :gen_udp.open(0, [:binary])
-      offer_pack = Packet.encode(@dhcp_offer)
-      :gen_udp.send(sock, {127, 0, 0, 1}, 6501, offer_pack)
+      conn = PckSrvNoRespond.connect()
+      PckSrvNoRespond.send_packet(conn, @dhcp_offer)
 
       assert_receive {:packet, pack, xid, chaddr}
       assert pack == @dhcp_offer
@@ -50,13 +48,11 @@ defmodule DhcpTest.Behaviour.HandlePacketTest do
     end
 
     test "and no one dies when handle_packet is not implemented" do
-      {:ok, pid} = NoPckSrvNoRespond.start_link()
-      {:ok, sock} = :gen_udp.open(0, [:binary])
-      offer_pack = Packet.encode(@dhcp_offer)
-      :gen_udp.send(sock, {127, 0, 0, 1}, 6503, offer_pack)
+      conn = NoPckSrvNoRespond.connect()
+      NoPckSrvNoRespond.send_packet(conn, @dhcp_offer)
 
       Process.sleep(100)
-      assert Process.alive?(pid)
+      assert Process.alive?(conn.server)
     end
   end
 
@@ -74,10 +70,8 @@ defmodule DhcpTest.Behaviour.HandlePacketTest do
 
   describe "dhcp ack requests" do
     test "are handled when handle_packet is implemented" do
-      PckSrvNoRespond.start_link()
-      {:ok, sock} = :gen_udp.open(0, [:binary])
-      offer_pack = Packet.encode(@dhcp_ack)
-      :gen_udp.send(sock, {127, 0, 0, 1}, 6501, offer_pack)
+      conn = PckSrvNoRespond.connect()
+      PckSrvNoRespond.send_packet(conn, @dhcp_ack)
 
       assert_receive {:packet, pack, xid, chaddr}
       assert pack == @dhcp_ack
@@ -86,13 +80,11 @@ defmodule DhcpTest.Behaviour.HandlePacketTest do
     end
 
     test "and no one dies when handle_packet is not implemented" do
-      {:ok, pid} = NoPckSrvNoRespond.start_link()
-      {:ok, sock} = :gen_udp.open(0, [:binary])
-      offer_pack = Packet.encode(@dhcp_ack)
-      :gen_udp.send(sock, {127, 0, 0, 1}, 6503, offer_pack)
+      conn = NoPckSrvNoRespond.connect()
+      NoPckSrvNoRespond.send_packet(conn, @dhcp_ack)
 
       Process.sleep(100)
-      assert Process.alive?(pid)
+      assert Process.alive?(conn.server)
     end
   end
 
@@ -107,10 +99,8 @@ defmodule DhcpTest.Behaviour.HandlePacketTest do
 
   describe "dhcp nak requests" do
     test "are handled when handle_packet is implemented" do
-      PckSrvNoRespond.start_link()
-      {:ok, sock} = :gen_udp.open(0, [:binary])
-      offer_pack = Packet.encode(@dhcp_nak)
-      :gen_udp.send(sock, {127, 0, 0, 1}, 6501, offer_pack)
+      conn = PckSrvNoRespond.connect
+      PckSrvNoRespond.send_packet(conn, @dhcp_nak)
 
       assert_receive {:packet, pack, xid, chaddr}
       assert pack == @dhcp_nak
@@ -119,13 +109,11 @@ defmodule DhcpTest.Behaviour.HandlePacketTest do
     end
 
     test "and no one dies when handle_packet is not implemented" do
-      {:ok, pid} = NoPckSrvNoRespond.start_link()
-      {:ok, sock} = :gen_udp.open(0, [:binary])
-      offer_pack = Packet.encode(@dhcp_nak)
-      :gen_udp.send(sock, {127, 0, 0, 1}, 6503, offer_pack)
+      conn = NoPckSrvNoRespond.connect()
+      NoPckSrvNoRespond.send_packet(conn, @dhcp_nak)
 
       Process.sleep(100)
-      assert Process.alive?(pid)
+      assert Process.alive?(conn.server)
     end
   end
 

@@ -154,7 +154,7 @@ defmodule ExDhcp do
         ExDhcp.start_link(__MODULE__, initial_state, options)
       end
 
-      defoverridable child_spec: 1, start_link: 1, start_link: 2
+      defoverridable child_spec: 1, start_link: 2
 
       @doc false
       @spec options_parsers() :: [module]
@@ -236,8 +236,8 @@ defmodule ExDhcp do
     # consider adding the bind device in.
     udp_opts = [:binary, active: true, broadcast: true] ++ bind_opt
 
-    with {:ok, state} <- module.init(initializer),
-         {:ok, socket} <- :gen_udp.open(port, udp_opts) do
+    with {:ok, socket} <- :gen_udp.open(port, udp_opts),
+         {:ok, state} <- initialize(module, initializer, socket) do
 
       {:ok, %{module: module,
               state: state,
@@ -247,6 +247,14 @@ defmodule ExDhcp do
       # on any other value obtained from attempting to initialize the
       # module, we return those errors transparently to cause the
       # initialization to fail.
+    end
+  end
+
+  defp initialize(module, initializer, socket) do
+    cond do
+      function_exported?(module, :init, 2) -> module.init(initializer, socket)
+      function_exported?(module, :init, 1) -> module.init(initializer)
+      true -> throw("init/1 and init/2 are missing from #{module} definition")
     end
   end
 
@@ -418,8 +426,18 @@ defmodule ExDhcp do
 
   Will typically emit `{:ok, state}`, where `state` is the _initial state_
   you expect to be contained within your ExDhcp GenServer.
+
+  use `init/1` if you don't care about accessing the underlying socket;
+  use `init/2` if you do.  ExDhcp will default to using `init/2` and fallback
+  to `init/1`.
   """
   @callback init(term) ::
+    {:ok, term}
+    | {:ok, term, timeout | :hibernate | {:continue, term}}
+    | :ignore
+    | {:stop, reason :: any}
+
+  @callback init(term, :gen_udp.socket) ::
     {:ok, term}
     | {:ok, term, timeout | :hibernate | {:continue, term}}
     | :ignore
@@ -596,6 +614,6 @@ defmodule ExDhcp do
 
   @optional_callbacks handle_inform: 4, handle_release: 4, handle_packet: 4,
                       handle_call: 3, handle_cast: 2, handle_info: 2,
-                      handle_continue: 2, terminate: 2
+                      handle_continue: 2, init: 1, init: 2, terminate: 2
 
 end
