@@ -38,7 +38,10 @@ defmodule Mix.Tasks.Snoop do
     require Logger
 
     @impl true
-    def init(_), do: {:ok, :ok}
+    def init(_) do
+      Logger.info("SNOOPING...")
+      {:ok, :ok}
+    end
 
     @impl true
     def handle_discover(packet, _, _, :ok) do
@@ -95,7 +98,7 @@ defmodule Mix.Tasks.Snoop do
 
   @doc false
   def run(_) do
-    DhcpSnooper.start_link(:ok)
+    DhcpSnooper.start_link(:ok, port: 67)
     receive do after :infinity -> :ok end
   end
 end
